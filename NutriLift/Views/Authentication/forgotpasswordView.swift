@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ForgotPasswordView: View {
+struct forgotpasswordView: View {
     @State private var email: String = ""
     @State private var isEmailSent = false
     @Environment(\.presentationMode) var presentationMode
@@ -120,5 +120,5 @@ extension Color {
 }
 
 #Preview {
-    ForgotPasswordView()
+    forgotpasswordView()
 }
