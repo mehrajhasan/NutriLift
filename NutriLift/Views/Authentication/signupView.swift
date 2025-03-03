@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CustomTextField: View {
+struct SignupTextField: View {
     var placeholder: String
     @Binding var text: String
     var isSecure: Bool = false
@@ -55,12 +55,12 @@ struct signupView: View {
                 .padding(.bottom, 20) //adds space below text
             
             VStack(spacing: 15) {
-                CustomTextField(placeholder: "First Name", text: $firstName)
-                CustomTextField(placeholder: "Last Name", text: $lastName)
-                CustomTextField(placeholder: "Email", text: $email)
-                CustomTextField(placeholder: "Create a Username", text: $username)
-                CustomTextField(placeholder: "Create a Password", text: $password, isSecure: true)
-                CustomTextField(placeholder: "Confirm Password", text: $confirmPassword, isSecure: true)
+                SignupTextField(placeholder: "First Name", text: $firstName)
+                SignupTextField(placeholder: "Last Name", text: $lastName)
+                SignupTextField(placeholder: "Email", text: $email)
+                SignupTextField(placeholder: "Create a Username", text: $username)
+                SignupTextField(placeholder: "Create a Password", text: $password, isSecure: true)
+                SignupTextField(placeholder: "Confirm Password", text: $confirmPassword, isSecure: true)
             }
             .padding(.horizontal, 30)   //Padding to align text boxes to be center
             //will be button to sign up
