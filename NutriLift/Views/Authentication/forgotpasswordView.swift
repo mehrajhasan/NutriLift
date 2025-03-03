@@ -2,7 +2,7 @@
 //  forgotpasswordView.swift
 //  NutriLift
 //
-//  Created by Lubna Asha on 3/2/25.
+//  Created by Jairo Iqbal Gil on 3/2/25.
 //
 
 import SwiftUI
