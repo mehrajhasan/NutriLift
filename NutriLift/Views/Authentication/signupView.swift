@@ -62,7 +62,7 @@ struct signupView: View {
                 SignupTextField(placeholder: "Create a Password", text: $password, isSecure: true)
                 SignupTextField(placeholder: "Confirm Password", text: $confirmPassword, isSecure: true)
             }
-            .padding(.horizontal, 30)   //Padding to align text boxes to be center
+            .padding(.horizontal, 25)   //Padding to align text boxes to be center
             //will be button to sign up
             Button(action: {
                 
