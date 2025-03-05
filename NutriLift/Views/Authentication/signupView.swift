@@ -13,20 +13,20 @@ struct SignupTextField: View {
     var isSecure: Bool = false
     
     var body: some View {
-        if isSecure {
+        if isSecure {   //secure fields needed to hide input when user enters password
             SecureField(placeholder, text: $text)
                 .padding()
                 .background(Color.black)
                 .foregroundColor(.white)
                 .cornerRadius(25)
                 .overlay(
-                    Text(placeholder)
+                    Text(placeholder)   //allows placeholder texts to only show when no input
                         .foregroundColor(text.isEmpty ? .gray : .clear) // placeholder is visible now
                         .padding(.leading, 15),
                     alignment: .leading
                 )
         }
-        else {
+        else {  //if its not secure field, just show regular text fields with placeholder
             TextField("", text: $text, prompt: Text(placeholder).foregroundColor(.gray)) //placeholder visible now
                 .padding()
                 .background(Color.black)
@@ -37,7 +37,7 @@ struct SignupTextField: View {
 }
 
 struct signupView: View {
-    // state variable for user input storing
+    // state variable for user input storing for each field
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
@@ -80,6 +80,17 @@ struct signupView: View {
             
             Spacer()    //content pushed to center of screen
             
+            Text("Already have an account?")
+                .padding(.top,-65)
+                .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
+            
+            NavigationLink(destination: loginView()) {  //navigation link to go to login page
+                Text("Sign in!")
+                    .underline()
+            }
+            .padding(.top,-55)
+            .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
+            
             Text("NutriLift")
                 .font(.footnote)
                 .foregroundColor(.black)
@@ -90,5 +101,7 @@ struct signupView: View {
 }
 
 #Preview {
-    signupView()
+    NavigationStack {
+        signupView()
+    }
 }
