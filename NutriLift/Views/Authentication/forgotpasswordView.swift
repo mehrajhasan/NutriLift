@@ -1,11 +1,23 @@
+
+//
+//  forgotpasswordView.swift
+//  NutriLift
+//
+//  Created by Jairo Iqbal Gil on 3/2/25.
+//
+
+
 import SwiftUI
 
 struct forgotpasswordView: View {
     @State private var email: String = ""
     @State private var isEmailSent = false
 
-    var body: some View {
+    var body: some View// use var if value can change
+    {
         NavigationStack {
+            
+            //Basic font and setup of the forget password page
             VStack(spacing: 20) {
                 Text("NutriLift")
                     .font(.largeTitle)
@@ -40,6 +52,7 @@ struct forgotpasswordView: View {
                         .shadow(color: Color.blue.opacity(0.5), radius: 10, x: 0, y: 5)
                         .padding(.horizontal, 30)
                 }
+                //if the email feild is empty then the button is disabled(change opacity if so)
                 .disabled(email.isEmpty)
                 .opacity(email.isEmpty ? 0.5 : 1.0)
 
@@ -51,7 +64,7 @@ struct forgotpasswordView: View {
 
                 Spacer()
 
-                // Navigation Link to LoginView
+                // Navigation Link to take you back LoginView
                 NavigationLink(destination: loginView()) {
                     Text("Back to Login")
                         .foregroundColor(.blue)
@@ -61,7 +74,7 @@ struct forgotpasswordView: View {
             .padding(.top, 50)
         }
     }
-
+//For future to send email
     func sendResetLink() {
         isEmailSent = true
     }
