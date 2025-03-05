@@ -7,8 +7,19 @@ const db = require('./db');
 db.connect();
 
 const app = express();
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     res.send('testing');
+});
+
+//checking if db connected
+app.get('/users', async (req,res) => {
+    try{
+        const { rows } = await db.query('SELECT * FROM Users');
+        res.send(rows);
+    }
+    catch(err){
+        res.send(err.message);
+    }
 });
 
 
