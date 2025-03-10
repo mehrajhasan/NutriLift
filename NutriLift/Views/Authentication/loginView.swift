@@ -31,31 +31,25 @@ struct loginView: View {
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                DispatchQueue.main.async {
-                    self.message = "Failed to connect to the server: \(error.localizedDescription)"
-                }
+                self.message = "Failed to connect to the server: \(error.localizedDescription)"
                 return
             }
              
             guard let httpResponse = response as? HTTPURLResponse else {
-                DispatchQueue.main.async {
-                    self.message = "An error occurred."
-                }
+                self.message = "An error occured."
                 return
             }
             
-            DispatchQueue.main.async {
-                if httpResponse.statusCode == 200 {
-                    self.message = "Login successful."
-                    self.loginSuccess = true
-                    self.onLoginSuccess() // Notify ContentView to switch to TaskBarView
-                } else if httpResponse.statusCode == 400 {
-                    self.message = "Incorrect password."
-                } else if httpResponse.statusCode == 404 {
-                    self.message = "User not found."
-                } else {
-                    self.message = "An error occurred. Please try again later."
-                }
+            if httpResponse.statusCode == 200 {
+                self.loginSuccess = true
+                self.message = "Login successful."
+                self.onLoginSuccess() // Notify ContentView to switch to TaskBarView
+            } else if httpResponse.statusCode == 400 {
+                self.message = "Incorrect password."
+            } else if httpResponse.statusCode == 404 {
+                self.message = "User not found."
+            } else {
+                self.message = "An error occurred. Please try again later."
             }
         }.resume()
     }
