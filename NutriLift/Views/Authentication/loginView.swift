@@ -5,6 +5,7 @@ struct loginView: View {
     @State private var password: String = ""
     @State private var message: String = ""
     @State private var loginSuccess: Bool = false
+    @State private var navigateToHome: Bool = false
     
     var onLoginSuccess: () -> Void // Callback function to update login state in ContentView
     
@@ -135,7 +136,6 @@ struct loginView: View {
                     print("Password: \(password)")
                     print("\(message)")
                     
-                    //navigateToHome = true //navigate to MacrosView after checking credentials
                 }){
                     Text("Sign in")
                         .foregroundColor(.white)
@@ -149,6 +149,10 @@ struct loginView: View {
                             
                         )
                         .padding(.vertical,75)
+                }
+                //if login was successful, send to macros page aka homepage
+                .navigationDestination(isPresented: $loginSuccess) {
+                    MacrosView()
                 }
                 
                 Text("New to NutriLift?")
@@ -164,10 +168,6 @@ struct loginView: View {
                 .padding(.top,-55)
                 .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
             }
-            
-//                .navigationDestination(isPresented: $navigateToHome) {  //brings user to home page (macros page)
-//                    MacrosView()
-//                }
         }
     }
 }
