@@ -10,8 +10,62 @@ import SwiftUI
 struct loginView: View {
     @State private var username: String = ""
     @State private var password: String = ""
+<<<<<<< HEAD
     @State private var navigateToHome = false // State to navigate to home (TaskBarView)
 
+=======
+    @State private var message: String = ""
+    @State private var loginSuccess: Bool = false
+    @State private var navigateToHome = false //state to control navigation for home page (macros page)
+    
+    func login(){
+        guard let url = URL(string: "http://localhost:3000/login") else {
+                print("An error occured.")
+                return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let input: [String: String] = [
+            "username": username,
+            "password": password
+        ]
+        
+        do{
+            request.httpBody = try JSONSerialization.data(withJSONObject: input)
+        }
+        catch{
+            print("An error occurred.")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                self.message = "Failed to connect to the server: \(error.localizedDescription)"
+                return
+            }
+             
+            guard let httpResponse = response as? HTTPURLResponse else {
+                self.message = "An error occured."
+                return
+            }
+            
+            if httpResponse.statusCode == 200 {
+                loginSuccess = true
+                self.message = "Login successful."
+            } else if httpResponse.statusCode == 400 {
+                self.message = "Incorrect password."
+            } else if httpResponse.statusCode == 404 {
+                self.message = "User not found."
+            } else {
+                self.message = "An error occurred. Please try again later."
+            }
+        }.resume()
+        
+    }
+    
+>>>>>>> main
     var body: some View {
         NavigationStack {
             VStack {
@@ -55,12 +109,24 @@ struct loginView: View {
 
                 // Sign-in Button
                 Button(action: {
+<<<<<<< HEAD
                     print("Username: \(username)")
                     print("Password: \(password)")
 
                     // Navigate to home page (TaskBarView)
                     navigateToHome = true
                 }) {
+=======
+                    login()
+                    //check user in database
+                    //just checking if flows correctly
+                    print("Username: \(username)")
+                    print("Password: \(password)")
+                    print("\(message)")
+                    
+                    //navigateToHome = true //navigate to MacrosView after checking credentials
+                }){
+>>>>>>> main
                     Text("Sign in")
                         .foregroundColor(.white)
                         .bold()
