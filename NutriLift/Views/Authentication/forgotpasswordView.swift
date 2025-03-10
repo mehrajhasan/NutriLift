@@ -65,11 +65,12 @@ struct forgotpasswordView: View {
                 Spacer()
 
                 // Navigation Link to take you back LoginView
-                NavigationLink(destination: loginView()) {
+                NavigationLink(destination: loginView(onLoginSuccess: { })) {
                     Text("Back to Login")
                         .foregroundColor(.blue)
                         .padding(.bottom, 20)
                 }
+
             }
             .padding(.top, 50)
         }
