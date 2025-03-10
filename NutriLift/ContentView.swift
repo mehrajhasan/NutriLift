@@ -7,7 +7,9 @@ struct ContentView: View {
         if isLoggedIn {
             TaskBarView() // Show main app after login
         } else {
-            loginView() // Now works correctly
+            loginView(onLoginSuccess: {
+                isLoggedIn = true // Update login state
+            })
         }
     }
 }
