@@ -84,10 +84,11 @@ struct signupView: View {
                 .padding(.top,-65)
                 .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
             
-            NavigationLink(destination: loginView()) {  //navigation link to go to login page
+            NavigationLink(destination: loginView(onLoginSuccess: { })) {
                 Text("Sign in!")
                     .underline()
             }
+
             .padding(.top,-55)
             .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
             
