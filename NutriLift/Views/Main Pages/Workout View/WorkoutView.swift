@@ -81,25 +81,6 @@ struct RoutinesView: View {
             }
 
             Spacer()
-
-            // Bottom Navigation Bar
-            HStack {
-                Spacer()
-                Image(systemName: "chart.pie.fill")
-                    .font(.largeTitle)
-                Spacer()
-                Image(systemName: "dumbbell.fill")
-                    .font(.largeTitle)
-                Spacer()
-                Image(systemName: "chart.bar.fill")
-                    .font(.largeTitle)
-                Spacer()
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.largeTitle)
-                Spacer()
-            }
-            .padding()
-            .background(Color.gray.opacity(0.2))
         }
         .navigationTitle("Workout Routines")
     }
@@ -129,7 +110,5 @@ struct RoutineCard: View {
 }
 
 #Preview {
-    RoutinesView()
+    TaskBarView()
 }
-
-
