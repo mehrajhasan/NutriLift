@@ -7,6 +7,8 @@ const db = require('./db');
 db.connect();
 
 const app = express();
+
+
 app.get('/', async (req, res) => {
     res.send('testing');
 });
@@ -22,6 +24,8 @@ app.get('/users', async (req,res) => {
     }
 });
 
+app.use(express.json());
+
 //login function
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -33,7 +37,11 @@ app.post('/login', async (req, res) => {
 
         if(check.rows.length>0){
             const user = check.rows[0];
-            const pass = check.password;
+            const storedPass = user.pass;
+
+            console.log(`Password from request:" ${password}`);
+            console.log(`Password from database:" ${storedPass}`);
+
 
             if(password == pass){
                 res.status(200).json({ message: "Login Successful" });
