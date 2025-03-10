@@ -29,11 +29,28 @@
 		0AADFF1E2D74D3280081EF73 /* NutriLiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NutriLiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0AF8C9562D7E9BAD00054B44 /* Exceptions for "NutriLift" folder in "NutriLift" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Backend/node_modules/bcrypt/Makefile,
+				Backend/node_modules/bcrypt/src/bcrypt_node.cc,
+				Backend/node_modules/bcrypt/src/bcrypt.cc,
+				Backend/node_modules/bcrypt/src/blowfish.cc,
+				Backend/node_modules/debug/Makefile,
+				Backend/node_modules/delegates/Makefile,
+				"Backend/node_modules/node-addon-api/nothing.c",
+				"Backend/node_modules/pg-types/Makefile",
+			);
+			target = 0AADFF012D74D3270081EF73 /* NutriLift */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0AADFF042D74D3270081EF73 /* NutriLift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				412C5A802D7E824900EB7014 /* Exceptions for "NutriLift" folder in "NutriLift" target */,
+				0AF8C9562D7E9BAD00054B44 /* Exceptions for "NutriLift" folder in "NutriLift" target */,
 			);
 			path = NutriLift;
 			sourceTree = "<group>";
