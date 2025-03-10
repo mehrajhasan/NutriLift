@@ -9,9 +9,10 @@ import SwiftUI
 
 struct MacrosView: View {
     @State private var selectedDate = Date()
-    
+
     var body: some View {
         VStack {
+            // Header
             HStack {
                 Spacer()
                 Text("Macronutrients")
@@ -26,6 +27,7 @@ struct MacrosView: View {
             }
             .padding()
             
+            // View Summary Button
             Button(action: { /* View summary action */ }) {
                 Text("View Summary")
                     .frame(maxWidth: .infinity)
@@ -36,6 +38,7 @@ struct MacrosView: View {
             }
             .padding(.horizontal)
             
+            // Date Navigation
             HStack {
                 Button(action: { /* Go to previous day */ }) {
                     Image(systemName: "chevron.left")
@@ -53,6 +56,7 @@ struct MacrosView: View {
             }
             .padding()
             
+            // Scrollable Meal Sections
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     MealSectionView(mealType: "Breakfast")
@@ -61,30 +65,12 @@ struct MacrosView: View {
                 }
                 .padding()
             }
-            
+
             Spacer()
-            
-            HStack {
-                Spacer()
-                Image(systemName: "chart.pie.fill")
-                    .font(.largeTitle)
-                Spacer()
-                Image(systemName: "dumbbell.fill")
-                    .font(.largeTitle)
-                Spacer()
-                Image(systemName: "chart.bar.fill")
-                    .font(.largeTitle)
-                Spacer()
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.largeTitle)
-                Spacer()
-            }
-            .padding()
-            .background(Color.gray.opacity(0.2))
         }
         .navigationTitle("Daily Macros Page")
     }
-    
+
     var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = "MM-dd-yyyy"
@@ -92,6 +78,7 @@ struct MacrosView: View {
     }
 }
 
+// Meal Section Component
 struct MealSectionView: View {
     var mealType: String
     
@@ -122,5 +109,5 @@ struct MealSectionView: View {
 }
 
 #Preview {
-    MacrosView()
+    TaskBarView()
 }
