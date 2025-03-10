@@ -11,6 +11,7 @@ import SwiftUI
 struct loginView: View {
     @State private var username: String = ""
     @State private var password: String = ""
+    @State private var navigateToHome = false //state to control navigation for home page (macros page)
     
     var body: some View {
         NavigationStack {
@@ -90,6 +91,8 @@ struct loginView: View {
                     //just checking if flows correctly
                     print("Username: \(username)")
                     print("Password: \(password)")
+                    
+                    navigateToHome = true //navigate to MacrosView after checking credentials
                 }){
                     Text("Sign in")
                         .foregroundColor(.white)
@@ -119,8 +122,9 @@ struct loginView: View {
                 .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
             }
             
-            
-            
+            .navigationDestination(isPresented: $navigateToHome) {  //brings user to home page (macros page)
+                MacrosView()
+            }
         }
     }
 }
