@@ -5,125 +5,120 @@
 //  Created by Mehraj Hasan on 3/2/25.
 //
 
-
 import SwiftUI
 
 struct loginView: View {
     @State private var username: String = ""
     @State private var password: String = ""
-    @State private var navigateToHome = false //state to control navigation for home page (macros page)
-    
+    @State private var navigateToHome = false // State to navigate to home (TaskBarView)
+
     var body: some View {
         NavigationStack {
-            VStack{
+            VStack {
+                // App Title
                 Text("NutriLift")
                     .font(.largeTitle)
                     .bold()
-                    .padding(.top,80)
-                
+                    .padding(.top, 80)
+
                 Spacer()
-                
+
+                // Username Field
                 TextField("Username", text: $username)
-                    .foregroundColor(.white)
-                    .padding(.horizontal)
-                    .frame(height:50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color(hue: 0.0, saturation: 0.0, brightness: 0.1686))
-                        
-                    )
+                    .padding()
+                    .frame(height: 50)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color.gray.opacity(0.2)))
                     .padding(.horizontal, 50)
-                    .padding(.bottom,-10)
-                    .overlay(
-                        Group{
-                            if username.isEmpty {
-                                Text("Username")
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, -130)
-                                    .padding(.bottom,-10)
-                            }
-                        }
-                    )
-                
-                
+
+                // Password Field
                 SecureField("Password", text: $password)
-                    .foregroundColor(.white)
-                    .padding(.horizontal)
-                    .frame(height:50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color(hue: 0.0, saturation: 0.0, brightness: 0.1686))
-                        
-                    )
+                    .padding()
+                    .frame(height: 50)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color.gray.opacity(0.2)))
                     .padding(.horizontal, 50)
-                    .overlay(
-                        Group{
-                            if password.isEmpty {
-                                Text("Password")
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, -130)
-                                    .padding(.bottom,-3)
-                            }
-                        }
-                    )
-                    .padding(.top,30)
-                    .padding(.bottom,-40)
-                    .padding(.vertical,-10)
-                
-                
-            }
-            HStack{
-                Spacer()
-                NavigationLink{
-                    forgotpasswordView()
-                } label: {
-                    Text("Forgot password?").underline()
+                    .padding(.top, 10)
+
+                // Forgot Password Link
+                HStack {
+                    Spacer()
+                    NavigationLink {
+                        forgotpasswordView()
+                    } label: {
+                        Text("Forgot password?").underline()
+                    }
+                    .foregroundColor(.blue)
+                    .padding(.trailing, 50)
                 }
-                .padding(.horizontal,50)
-                .padding(.top,50)
-                .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
-                
-            }
-            VStack{
+                .padding(.top, 10)
+
                 Spacer()
+
+                // Sign-in Button
                 Button(action: {
-                    //check user in database
-                    //just checking if flows correctly
                     print("Username: \(username)")
                     print("Password: \(password)")
-                    
-                    navigateToHome = true //navigate to MacrosView after checking credentials
-                }){
+
+                    // Navigate to home page (TaskBarView)
+                    navigateToHome = true
+                }) {
                     Text("Sign in")
                         .foregroundColor(.white)
                         .bold()
                         .font(.title2)
-                        .frame(height:40)
-                        .padding(.horizontal, 110)
-                        .background(
-                            RoundedRectangle(cornerRadius: 25)
-                                .fill(Color(hue: 0.55033,saturation: 0.9608,brightness: 1))
-                            
-                        )
-                        .padding(.vertical,75)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 25).fill(Color.blue))
+                        .padding(.horizontal, 50)
                 }
-                
-                Text("New to NutriLift?")
-                    .padding(.top,-65)
-                    .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
-                
-                NavigationLink{
-                    signupView()
-                } label: {
-                    Text("Sign up!")
-                        .underline()
+                .padding(.top, 30)
+
+                // Sign-up Section
+                VStack {
+                    Text("New to NutriLift?")
+                        .foregroundColor(.gray)
+
+                    NavigationLink {
+                        signupView()
+                    } label: {
+                        Text("Sign up!").underline()
+                    }
+                    .foregroundColor(.blue)
                 }
-                .padding(.top,-55)
-                .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
+                .padding(.top, 15)
             }
-            
-            .navigationDestination(isPresented: $navigateToHome) {  //brings user to home page (macros page)
-                MacrosView()
+            .navigationDestination(isPresented: $navigateToHome) {
+                TaskBarView() // Navigate to home page
+            }
+        }
+    }
+}
+
+
+// Reusable InputField Component (Handles both TextField and SecureField)
+struct InputField: View {
+    @Binding var text: String
+    var placeholder: String
+    var isSecure: Bool = false
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.leading, 20)
+            }
+            if isSecure {
+                SecureField("", text: $text)
+                    .foregroundColor(.white)
+                    .padding(.horizontal)
+                    .frame(height: 50)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color.gray.opacity(0.2)))
+            } else {
+                TextField("", text: $text)
+                    .foregroundColor(.white)
+                    .padding(.horizontal)
+                    .frame(height: 50)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color.gray.opacity(0.2)))
             }
         }
     }
