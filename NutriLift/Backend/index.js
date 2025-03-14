@@ -1,30 +1,15 @@
 const express = require('express');
-const cors = require('cors');
 require('dotenv').config();
-
+const jwt = require('jsonwebtoken');
 const db = require('./db');
 
 db.connect();
-
 const app = express();
-
+app.use(express.json());
 
 app.get('/', async (req, res) => {
     res.send('testing');
 });
-
-//checking if db connected
-app.get('/users', async (req,res) => {
-    try{
-        const { rows } = await db.query('SELECT * FROM Users');
-        res.send(rows);
-    }
-    catch(err){
-        res.send(err.message);
-    }
-});
-
-app.use(express.json());
 
 //login function
 app.post('/login', async (req, res) => {
@@ -43,8 +28,15 @@ app.post('/login', async (req, res) => {
             console.log(`Password from database:" ${storedPass}`);
 
 
-            if(password == pass){
-                res.status(200).json({ message: "Login Successful" });
+            if(password === storedPass){
+                const token = jwt.sign(
+                    {
+                        username: user.username
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+                res.status(200).json({ message: "Login Successful", token: token });
             }
             else{
                 res.status(400).json({ message: "Incorrect Password" });
@@ -58,6 +50,30 @@ app.post('/login', async (req, res) => {
     catch(err){
         res.send(err.message);
     }
+})
+
+//authenticate teh token
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+
+    //"Bearer ..............""
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    //if not there
+    if (!token) return res.status(401).json({ message: "Authentication required" });
+    
+    //if invalid
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: "Invalid or expired token" });
+        
+        req.user = user;
+        next();
+    });
+};
+
+//for jwt
+app.get('/protected', authenticateToken, async (req,res) => {
+    res.json({ message: "Success", user: req.user });
 })
 
 app.listen(3000, () => {
