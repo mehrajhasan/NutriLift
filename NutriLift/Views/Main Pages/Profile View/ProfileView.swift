@@ -123,7 +123,7 @@ struct ProfileView: View {
                     HStack{
                         Text("Calories")
                         Spacer()
-                        Text("\(Int((caloriesProgress * 100)))%")
+//                        Text("\(Int((caloriesProgress * 100)))%")
                     }
                     .foregroundColor(.black)
                     .bold()
@@ -142,7 +142,7 @@ struct ProfileView: View {
                     HStack{
                         Text("Protein")
                         Spacer()
-                        Text("\(Int(proteinProgress*100))%")
+//                        Text("\(Int(proteinProgress*100))%")
                     }
                     .foregroundColor(.black)
                     .bold()
