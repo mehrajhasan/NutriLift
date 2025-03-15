@@ -3,9 +3,14 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
-db.connect();
+
 const app = express();
 app.use(express.json());
+
+// Ensure database connection
+db.connect()
+    .then(() => console.log("Connected to PostgreSQL"))
+    .catch(err => console.error("Database connection error:", err));
 
 app.get('/', async (req, res) => {
     res.send('testing');
@@ -80,11 +85,48 @@ const authenticateToken = (req, res, next) => {
 Authentication in SwiftUI App Using JSON Web Token (JWT) by azamsharp
 https://www.youtube.com/watch?v=iXG3tVTZt6o
 */
+
 //for jwt
 app.get('/protected', authenticateToken, async (req,res) => {
     res.json({ message: "Success", user: req.user });
 })
 
-app.listen(3000, () => {
-    console.log(`Server running on http://localhost:3000/`);
-})
+app.post('/signup', async (req, res) => {
+    const { firstName, lastName, email, username, password } = req.body;
+
+    if (!firstName || !lastName || !email || !username || !password) {
+        return res.status(400).json({ error: "All fields are required" });
+    }
+
+    try {
+        // Check if username already exists
+        const usernameCheck = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (usernameCheck.rows.length > 0) {
+            return res.status(400).json({ error: "Username already exists" });
+        }
+
+        // Check if email already exists
+        const emailCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (emailCheck.rows.length > 0) {
+            return res.status(400).json({ error: "Email already in use" });
+        }
+
+        // If both are unique, proceed with user creation
+        const result = await db.query(
+            'INSERT INTO users (first_name, last_name, email, username, pass) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [firstName, lastName, email, username, password]
+        );
+
+        res.status(201).json({ message: "User created successfully", user: result.rows[0] });
+    } catch (error) {
+        console.error("Signup error:", error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+
+// Single app.listen to avoid conflicts
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}/`);
+});
