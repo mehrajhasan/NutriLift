@@ -16,12 +16,16 @@ struct ProfileView: View {
     //need to make dynamic
     //for progress bar
     var caloriesProgress: Double {
-            return Double(caloriesConsumed) / Double(caloriesGoal)
+        guard caloriesGoal > 0 else { return 0.0 }
+        let prog = Double(caloriesConsumed) / Double(caloriesGoal)
+        return prog.isFinite ? prog : 0.0
     }
     
     //for progress bar
     var proteinProgress: Double {
-        return Double(proteinConsumed) / Double(proteinGoal)
+        guard proteinGoal > 0 else { return 0.0 }
+        let prog = Double(proteinConsumed) / Double(proteinGoal)
+        return prog.isFinite ? prog : 0.0
     }
     
     var body: some View {
@@ -123,7 +127,7 @@ struct ProfileView: View {
                     HStack{
                         Text("Calories")
                         Spacer()
-//                        Text("\(Int((caloriesProgress * 100)))%")
+                        Text("\(Int((caloriesProgress * 100)))%")
                     }
                     .foregroundColor(.black)
                     .bold()
@@ -142,7 +146,7 @@ struct ProfileView: View {
                     HStack{
                         Text("Protein")
                         Spacer()
-//                        Text("\(Int(proteinProgress*100))%")
+                        Text("\(Int(proteinProgress*100))%")
                     }
                     .foregroundColor(.black)
                     .bold()
