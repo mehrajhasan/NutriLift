@@ -52,6 +52,11 @@ app.post('/login', async (req, res) => {
     }
 })
 
+
+/*
+Authentication in SwiftUI App Using JSON Web Token (JWT) by azamsharp
+https://www.youtube.com/watch?v=iXG3tVTZt6o
+*/
 //authenticate teh token
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -71,6 +76,10 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+/*
+Authentication in SwiftUI App Using JSON Web Token (JWT) by azamsharp
+https://www.youtube.com/watch?v=iXG3tVTZt6o
+*/
 //for jwt
 app.get('/protected', authenticateToken, async (req,res) => {
     res.json({ message: "Success", user: req.user });
