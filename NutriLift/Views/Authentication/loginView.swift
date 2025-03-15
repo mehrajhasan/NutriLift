@@ -7,7 +7,7 @@ struct loginView: View {
     @State private var loginSuccess: Bool = false
     @State private var navigateToHome: Bool = false
     
-    var onLoginSuccess: () -> Void // Callback function to update login state in ContentView
+    var onLoginSuccess: () -> Void
     
     func login() {
         guard let url = URL(string: "http://localhost:3000/login") else {
@@ -42,9 +42,28 @@ struct loginView: View {
             }
             
             if httpResponse.statusCode == 200 {
-                self.loginSuccess = true
-                self.message = "Login successful."
-                self.onLoginSuccess() // Notify ContentView to switch to TaskBarView
+                /*
+                Authentication in SwiftUI App Using JSON Web Token (JWT) by azamsharp
+                https://www.youtube.com/watch?v=iXG3tVTZt6o
+                */
+                if let data = data {
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        if let token = json?["token"] as? String {
+
+                            UserDefaults.standard.set(token, forKey: "userToken")
+                            
+                            self.loginSuccess = true
+                            print("Login successful.")
+                            self.onLoginSuccess()
+                        }
+                    } catch {
+                        self.message = "Failed to decode server response"
+                    }
+                }
+                
+
+                
             } else if httpResponse.statusCode == 400 {
                 self.message = "Incorrect password."
             } else if httpResponse.statusCode == 404 {
@@ -53,6 +72,22 @@ struct loginView: View {
                 self.message = "An error occurred. Please try again later."
             }
         }.resume()
+    }
+    
+    func fetchProtected(){
+        guard let url = URL(string: "http://localhost:3000/protected") else {
+                return
+            }
+        
+        var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            
+            if let token = UserDefaults.standard.string(forKey: "userToken") {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+            }.resume()
     }
     
     var body: some View {
