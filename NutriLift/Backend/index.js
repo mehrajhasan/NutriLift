@@ -97,6 +97,9 @@ app.post('/signup', async (req, res) => {
     if (!firstName || !lastName || !email || !username || !password) {
         return res.status(400).json({ error: "All fields are required" });
     }
+//fetch user profile info (incomplete)
+app.get('/user/:user_id', async (req, res) => {
+    const { userID } = req.params;
 
     try {
         // Check if username already exists
@@ -112,9 +115,25 @@ app.post('/signup', async (req, res) => {
         }
 
         // If both are unique, proceed with user creation
+        //join to get first last name from user
         const result = await db.query(
             'INSERT INTO users (first_name, last_name, email, username, pass) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [firstName, lastName, email, username, password]
+            `SELECT 
+                u.user_id,
+                u.username,
+                u.first_name,
+                u.last_name,
+                u.email,
+                up.profile_pic,
+                up.points
+             FROM 
+                Users u
+             JOIN 
+                UserProfiles up ON u.user_id = up.user_id
+             WHERE 
+                u.user_id = $1`,
+            [userID]
         );
 
         res.status(201).json({ message: "User created successfully", user: result.rows[0] });
@@ -130,3 +149,13 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}/`);
 });
+        //get the stuff later
+    }
+    catch(err){
+        console.log("Error: ", err.message);
+    }
+})
+
+app.listen(3000, () => {
+    console.log(`Server running on http://localhost:3000/`);
+})
