@@ -85,6 +85,37 @@ app.get('/protected', authenticateToken, async (req,res) => {
     res.json({ message: "Success", user: req.user });
 })
 
+//fetch user profile info (incomplete)
+app.get('/user/:user_id', async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        //join to get first last name from user
+        const result = await db.query(
+            `SELECT 
+                u.user_id,
+                u.username,
+                u.first_name,
+                u.last_name,
+                u.email,
+                up.profile_pic,
+                up.points
+             FROM 
+                Users u
+             JOIN 
+                UserProfiles up ON u.user_id = up.user_id
+             WHERE 
+                u.user_id = $1`,
+            [userID]
+        );
+
+        //get the stuff later
+    }
+    catch(err){
+        console.log("Error: ", err.message);
+    }
+})
+
 app.listen(3000, () => {
     console.log(`Server running on http://localhost:3000/`);
 })
