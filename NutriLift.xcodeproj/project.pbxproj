@@ -29,7 +29,6 @@
 		0AADFF1E2D74D3280081EF73 /* NutriLiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NutriLiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-<<<<<<< HEAD
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		0AF8C9562D7E9BAD00054B44 /* Exceptions for "NutriLift" folder in "NutriLift" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -41,8 +40,6 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
-=======
->>>>>>> 7e3c223aaad074b244980d2c3d7f20da33075da9
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0AADFF042D74D3270081EF73 /* NutriLift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
