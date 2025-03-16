@@ -6,12 +6,29 @@
 //
 import SwiftUI
 
+//defining db structure for fetching
+struct UserProfile: Codable {
+    let user_id: Int
+    let username: String
+    let first_name: String
+    let last_name: String
+    let email: String
+    let profile_pic: String?
+    let points: Int
+}
+
 struct ProfileView: View {
     @State private var macroProgress: Double = 0.0 // from 0 to 1
     @State private var caloriesConsumed: Int = 0
     @State private var caloriesGoal: Int = 0
     @State private var proteinConsumed: Int = 0
     @State private var proteinGoal: Int = 0
+    
+    //from db
+    @State private var first_name: String = ""
+    @State private var last_name: String = ""
+    @State private var points: Int = 0
+    
     
     //need to make dynamic
     //for progress bar
@@ -26,6 +43,66 @@ struct ProfileView: View {
         guard proteinGoal > 0 else { return 0.0 }
         let prog = Double(proteinConsumed) / Double(proteinGoal)
         return prog.isFinite ? prog : 0.0
+    }
+    
+    func fetchUserProfile(userId: Int) {
+//        let userId = UserDefaults.standard.integer(forKey: "userId")
+        
+        guard let url = URL(string: "http://localhost:3000/user/\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        } else {
+            print("No token found")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            if httpResponse.statusCode == 200 {
+                if let data = data {
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        if let profileData = json {
+                            let profile = UserProfile(
+                                user_id: profileData["user_id"] as? Int ?? 0,
+                                username: profileData["username"] as? String ?? "",
+                                first_name: profileData["first_name"] as? String ?? "",
+                                last_name: profileData["last_name"] as? String ?? "",
+                                email: profileData["email"] as? String ?? "",
+                                profile_pic: profileData["profile_pic"] as? String,
+                                points: profileData["points"] as? Int ?? 0
+                            )
+                            
+                            
+                            self.first_name = profile.first_name
+                            self.last_name = profile.last_name
+                            self.points = profile.points
+                        }
+                    } catch {
+                        print("Failed to decode server response: \(error.localizedDescription)")
+                    }
+                }
+            } else {
+                print("Server returned status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
     }
     
     var body: some View {
@@ -77,7 +154,7 @@ struct ProfileView: View {
             //dynamic
             //name - edit profile - points
             VStack{
-                Text("John Doe")
+                Text("\(first_name) \(last_name)")
                     .font(.title)
                     .bold()
                 
@@ -86,7 +163,7 @@ struct ProfileView: View {
                 } label:{
                     Text("Edit Profile")
                         .foregroundColor(.white)
-                    //                    .bold()
+//                                        .bold()
                         .font(.callout)
                         .frame(height:30)
                         .padding(.horizontal, 35)
@@ -98,7 +175,12 @@ struct ProfileView: View {
                 }
                 .padding(.top, -12.5)
                 //make dynamic for level and leaderboard score
-                Text("18          393")
+                HStack{
+                    Text("rankhere")
+                    
+                    Text("\(points)")
+                }
+                
             }
             .padding(.top, -175)
             
@@ -170,8 +252,10 @@ struct ProfileView: View {
             )
             .padding(.horizontal)
             .padding(.top, 150)
-            
-
+        }
+        .onAppear {
+            let userId = UserDefaults.standard.integer(forKey: "userId")
+            fetchUserProfile(userId: userId)
         }
     }
 }

@@ -53,6 +53,11 @@ struct loginView: View {
 
                             UserDefaults.standard.set(token, forKey: "userToken")
                             
+                            //store userID for rest of data processing
+                            if let userId = json?["user_id"] as? Int {
+                                UserDefaults.standard.set(userId, forKey: "userId")
+                            }
+                            
                             self.loginSuccess = true
                             print("Login successful.")
                             self.onLoginSuccess()
