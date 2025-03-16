@@ -16,6 +16,15 @@ app.get('/', async (req, res) => {
     res.send('testing');
 });
 
+
+
+//macronutrient route
+const macronutrientRoutes = require("./macronutrients");
+app.use("/api", macronutrientRoutes);
+
+
+
+
 //login function
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -77,6 +86,16 @@ app.get('/protected', authenticateToken, async (req,res) => {
     res.json({ message: "Success", user: req.user });
 })
 
+<<<<<<< HEAD
+app.listen(3000, () => {
+    console.log(`Server running on http://localhost:3000/`);
+})
+
+
+
+
+
+=======
 const bcrypt = require('bcryptjs');
 const saltRounds = 10; // Number of hashing rounds
 
@@ -121,3 +140,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}/`);
 });
+>>>>>>> 8533562dfa1479625f1afb3e7b0d8235532b7302
