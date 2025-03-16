@@ -25,8 +25,8 @@ struct ProfileView: View {
     @State private var proteinGoal: Int = 0
     
     //from db
-    @State private var first_name: String = ""
-    @State private var last_name: String = ""
+    @State private var first_name: String = "John"
+    @State private var last_name: String = "Doe"
     @State private var points: Int = 0
     
     
@@ -46,8 +46,6 @@ struct ProfileView: View {
     }
     
     func fetchUserProfile(userId: Int) {
-//        let userId = UserDefaults.standard.integer(forKey: "userId")
-        
         guard let url = URL(string: "http://localhost:3000/user/\(userId)") else {
             print("Invalid URL")
             return
@@ -59,9 +57,6 @@ struct ProfileView: View {
         
         if let token = UserDefaults.standard.string(forKey: "userToken") {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        } else {
-            print("No token found")
-            return
         }
         
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -78,19 +73,10 @@ struct ProfileView: View {
             if httpResponse.statusCode == 200 {
                 if let data = data {
                     do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        if let profileData = json {
-                            let profile = UserProfile(
-                                user_id: profileData["user_id"] as? Int ?? 0,
-                                username: profileData["username"] as? String ?? "",
-                                first_name: profileData["first_name"] as? String ?? "",
-                                last_name: profileData["last_name"] as? String ?? "",
-                                email: profileData["email"] as? String ?? "",
-                                profile_pic: profileData["profile_pic"] as? String,
-                                points: profileData["points"] as? Int ?? 0
-                            )
-                            
-                            
+                        let decoder = JSONDecoder()
+                        let profile = try decoder.decode(UserProfile.self, from: data)
+                        
+                        DispatchQueue.main.async{
                             self.first_name = profile.first_name
                             self.last_name = profile.last_name
                             self.points = profile.points
@@ -106,156 +92,165 @@ struct ProfileView: View {
     }
     
     var body: some View {
-        ZStack{
-            //header
-            
-            //messaging (?)
-            HStack{
-                Button(action: {}) {
-                    Image(systemName: "bubble.left")
-                        .font(.title2)
+        NavigationStack {
+            ZStack{
+                //header
+                
+                //messaging (?)
+                HStack{
+                    Button(action: {}) {
+                        Image(systemName: "bubble.left")
+                            .font(.title2)
+                    }
+                    
+                    Spacer()
+                    
+                    //profile
+                    Text("Profile")
+                        .font(.title)
+                        .bold()
+                    
+                    Spacer()
+                    
+                    //search
+                    Button(action: {}) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.title2)
+                    }
+                    
                 }
+                .padding(.horizontal)
+                .padding(.top,-375)
                 
-                Spacer()
                 
-                //profile
-                Text("Profile")
-                    .font(.title)
-                    .bold()
-                
-                Spacer()
-                
-                //search
-                Button(action: {}) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.title2)
-                }
-                
-            }
-            .padding(.horizontal)
-            .padding(.top,-375)
-            
-            
-            //user profile pic dynamic
-            VStack{
-                Circle()
-                    .fill(Color(red: 0.9, green: 0.9, blue: 1.0))
-                    .frame(width: 100, height: 100)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .padding(25)
-                            .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
-                    )
-            }
-            .padding(.top,-300)
-            
-            //dynamic
-            //name - edit profile - points
-            VStack{
-                Text("\(first_name) \(last_name)")
-                    .font(.title)
-                    .bold()
-                
-                NavigationLink{
-                    EditProfile()
-                } label:{
-                    Text("Edit Profile")
-                        .foregroundColor(.white)
-//                                        .bold()
-                        .font(.callout)
-                        .frame(height:30)
-                        .padding(.horizontal, 35)
-                        .background(
-                            RoundedRectangle(cornerRadius: 25)
-                                .fill(Color(hue: 0.544, saturation: 0.11, brightness: 0.73))
-                            
+                //user profile pic dynamic
+                VStack{
+                    Circle()
+                        .fill(Color(red: 0.9, green: 0.9, blue: 1.0))
+                        .frame(width: 100, height: 100)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .padding(25)
+                                .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
                         )
                 }
-                .padding(.top, -12.5)
-                //make dynamic for level and leaderboard score
-                HStack{
-                    Text("rankhere")
-                    
-                    Text("\(points)")
-                }
+                .padding(.top,-300)
                 
-            }
-            .padding(.top, -175)
-            
-            
-            VStack(alignment: .leading, spacing: 25){
+                //dynamic
+                //name - edit profile - points
                 VStack{
-                    HStack{
-                        Text("Macro Progress")
-                        Spacer()
-                        Text("\(Int(macroProgress * 100))%")
+                    Text("\(first_name) \(last_name)")
+                        .font(.title)
+                        .bold()
+                    
+                    NavigationLink{
+                        EditProfile()
+                    } label:{
+                        Text("Edit Profile")
+                            .foregroundColor(.white)
+                        //                                        .bold()
+                            .font(.callout)
+                            .frame(height:30)
+                            .padding(.horizontal, 35)
+                            .background(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .fill(Color(hue: 0.544, saturation: 0.11, brightness: 0.73))
+                                
+                            )
                     }
-                    .foregroundColor(.black)
-                    .bold()
+                    .padding(.top, -12.5)
+                    //make dynamic for level and leaderboard score
+                    HStack{
+                        Text("0")
+                        Image(systemName: "star.circle.fill")
+                            .font(.system(size: 15))
+                            .foregroundColor(.black)
                         
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12.5)
-                            .fill(Color.white)
-                            .frame(height:30)
-                            .padding(.horizontal, -7.5)
-                        ProgressView(value: macroProgress)
+                        
+                        //need to make dynamic for up down
+                        Text("\(points)")
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 17))
+                            .foregroundColor(.green)
                     }
-                }
-                               
-                
-                VStack{
-                    HStack{
-                        Text("Calories")
-                        Spacer()
-                        Text("\(Int((caloriesProgress * 100)))%")
-                    }
-                    .foregroundColor(.black)
-                    .bold()
                     
-                    ZStack{
-                        RoundedRectangle(cornerRadius: 12.5)
-                            .fill(Color.white)
-                            .frame(height:30)
-                            .padding(.horizontal, -7.5)
-                        ProgressView(value: caloriesProgress)
-                    }
                 }
+                .padding(.top, -175)
                 
                 
-                VStack{
-                    HStack{
-                        Text("Protein")
-                        Spacer()
-                        Text("\(Int(proteinProgress*100))%")
+                VStack(alignment: .leading, spacing: 25){
+                    VStack{
+                        HStack{
+                            Text("Macro Progress")
+                            Spacer()
+                            Text("\(Int(macroProgress * 100))%")
+                        }
+                        .foregroundColor(.black)
+                        .bold()
+                        
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12.5)
+                                .fill(Color.white)
+                                .frame(height:30)
+                                .padding(.horizontal, -7.5)
+                            ProgressView(value: macroProgress)
+                        }
                     }
-                    .foregroundColor(.black)
-                    .bold()
-                  
-                    ZStack{
-                        RoundedRectangle(cornerRadius: 12.5)
-                            .fill(Color.white)
-                            .frame(height:30)
-                            .padding(.horizontal, -7.5)
-                        ProgressView(value: proteinProgress)
+                    
+                    
+                    VStack{
+                        HStack{
+                            Text("Calories")
+                            Spacer()
+                            Text("\(Int((caloriesProgress * 100)))%")
+                        }
+                        .foregroundColor(.black)
+                        .bold()
+                        
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 12.5)
+                                .fill(Color.white)
+                                .frame(height:30)
+                                .padding(.horizontal, -7.5)
+                            ProgressView(value: caloriesProgress)
+                        }
                     }
+                    
+                    
+                    VStack{
+                        HStack{
+                            Text("Protein")
+                            Spacer()
+                            Text("\(Int(proteinProgress*100))%")
+                        }
+                        .foregroundColor(.black)
+                        .bold()
+                        
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 12.5)
+                                .fill(Color.white)
+                                .frame(height:30)
+                                .padding(.horizontal, -7.5)
+                            ProgressView(value: proteinProgress)
+                        }
+                    }
+                    
+                    
+                    
                 }
-                
-
-                
+                .padding()
+                .padding(.vertical, 5)
+                .background(RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(red: 0.827, green: 0.827, blue: 0.827))
+                )
+                .padding(.horizontal)
+                .padding(.top, 150)
             }
-            .padding()
-            .padding(.vertical, 5)
-            .background(RoundedRectangle(cornerRadius: 20)
-                .fill(Color(red: 0.827, green: 0.827, blue: 0.827))
-            )
-            .padding(.horizontal)
-            .padding(.top, 150)
-        }
-        .onAppear {
-            let userId = UserDefaults.standard.integer(forKey: "userId")
-            fetchUserProfile(userId: userId)
+            .onAppear {
+                fetchUserProfile(userId: 12)
+            }
         }
     }
 }
