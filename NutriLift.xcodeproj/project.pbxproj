@@ -33,13 +33,7 @@
 		0AF8C9562D7E9BAD00054B44 /* Exceptions for "NutriLift" folder in "NutriLift" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Backend/node_modules/bcrypt/Makefile,
-				Backend/node_modules/bcrypt/src/bcrypt_node.cc,
-				Backend/node_modules/bcrypt/src/bcrypt.cc,
-				Backend/node_modules/bcrypt/src/blowfish.cc,
 				Backend/node_modules/debug/Makefile,
-				Backend/node_modules/delegates/Makefile,
-				"Backend/node_modules/node-addon-api/nothing.c",
 				"Backend/node_modules/pg-types/Makefile",
 			);
 			target = 0AADFF012D74D3270081EF73 /* NutriLift */;
