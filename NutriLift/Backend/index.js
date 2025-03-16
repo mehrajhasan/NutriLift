@@ -114,29 +114,51 @@ app.get('/user/:user_id', async (req, res) => {
     }
 })
 
-
+/*bcrypt youtube video
+https://youtu.be/AzA_LTDoFqY?si=W2SVbxsXv7QGCF-P
+ */
 const bcrypt = require('bcryptjs');
 const saltRounds = 10; // Number of hashing rounds
 
 app.post('/signup', async (req, res) => {
-    const { firstName, lastName, email, username, password } = req.body;
+    const { firstName, lastName, email, username, password, confirmPassword } = req.body;
 
-    if (!firstName || !lastName || !email || !username || !password) {
+    if (!firstName || !lastName || !email || !username || !password || !confirmPassword) {
         return res.status(400).json({ error: "All fields are required" });
     }
 
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        return res.status(400).json({
+            error: "Passwords do not match",
+            field: "password"
+        });
+    }
+
     try {
+        console.log("Checking if username or email exists...");
+
         // Check if username already exists
         const usernameCheck = await db.query('SELECT * FROM users WHERE username = $1', [username]);
         if (usernameCheck.rows.length > 0) {
-            return res.status(400).json({ error: "Username already exists" });
+            console.log("Username already taken:", username);
+            return res.status(400).json({
+                error: "Username already exists",
+                field: "username"
+            });
         }
 
         // Check if email already exists
         const emailCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (emailCheck.rows.length > 0) {
-            return res.status(400).json({ error: "Email already in use" });
+            console.log("Email already in use:", email);
+            return res.status(400).json({
+                error: "Email already in use",
+                field: "email"
+            });
         }
+
+        console.log("Username and email are unique. Proceeding with signup...");
 
         // Hash password before storing it
         const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -147,12 +169,78 @@ app.post('/signup', async (req, res) => {
             [firstName, lastName, email, username, hashedPassword]
         );
 
-        res.status(201).json({ message: "User created successfully", user: result.rows[0] });
+        console.log("User created successfully:", result.rows[0]);
+
+        return res.status(201).json({
+            message: "User created successfully",
+            user: result.rows[0]
+        });
+
     } catch (error) {
         console.error("Signup error:", error);
-        res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ error: "Database error" });
     }
 });
+
+// Check if username is taken
+app.get("/check-username", async (req, res) => {
+    try {
+        const { value } = req.query;
+        if (!value) {
+            return res.status(400).json({ available: false, error: "Username is required" });
+        }
+
+        const result = await db.query("SELECT COUNT(*) FROM users WHERE username = $1", [value]);
+        const isAvailable = result.rows[0].count == "0"; // If count is 0, username is available
+
+        console.log(`Checking username: "${value}" - Available: ${isAvailable}`); // 🔹 Logs check
+
+        return res.json({ available: isAvailable });
+    } catch (error) {
+        console.error("Username check error:", error);
+        return res.status(500).json({ available: false, error: "Database error" });
+    }
+});
+
+// Check if email is taken
+app.get("/check-email", async (req, res) => {
+    try {
+        const { value } = req.query;
+        if (!value) {
+            return res.status(400).json({ available: false, error: "Email is required" });
+        }
+
+        const result = await db.query("SELECT COUNT(*) FROM users WHERE email = $1", [value]);
+        const isAvailable = result.rows[0].count == "0"; // If count is 0, email is available
+
+        console.log(`Checking email: "${value}" - Available: ${isAvailable}`); //Logs check
+
+        return res.json({ available: isAvailable });
+    } catch (error) {
+        console.error("Email check error:", error);
+        return res.status(500).json({ available: false, error: "Database error" });
+    }
+});
+
+
+// Check if email is taken
+app.get("/check-email", async (req, res) => {
+    try {
+        const { value } = req.query;
+        if (!value) {
+            return res.status(400).json({ available: false, error: "Email is required" });
+        }
+
+        const result = await db.query("SELECT COUNT(*) FROM users WHERE email = $1", [value]);
+        const isAvailable = result.rows[0].count == "0"; // If count is 0, email is available
+
+        return res.json({ available: isAvailable });
+    } catch (error) {
+        console.error("Email check error:", error);
+        return res.status(500).json({ available: false, error: "Database error" });
+    }
+});
+
 
 app.listen(3000, () => {
     console.log(`Server running on http://localhost:3000/`);
