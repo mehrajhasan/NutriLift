@@ -87,7 +87,7 @@ app.get('/protected', authenticateToken, async (req,res) => {
 
 //fetch user profile info (incomplete)
 app.get('/user/:user_id', async (req, res) => {
-    const { userID } = req.params;
+    const { user_id } = req.params;
 
     try {
         //join to get first last name from user
@@ -106,10 +106,11 @@ app.get('/user/:user_id', async (req, res) => {
                 UserProfiles up ON u.user_id = up.user_id
              WHERE 
                 u.user_id = $1`,
-            [userID]
+            [user_id]
         );
 
-        //get the stuff later
+        const profile = result.rows[0];
+        res.status(200).json(profile);
     }
     catch(err){
         console.log("Error: ", err.message);
