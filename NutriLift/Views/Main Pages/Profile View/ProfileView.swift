@@ -112,8 +112,7 @@ struct ProfileView: View {
                     
                     Spacer()
                     
-                    //search
-                    Button(action: {}) {
+                    NavigationLink(destination: UserSearch()) {
                         Image(systemName: "magnifyingglass")
                             .font(.title2)
                     }
