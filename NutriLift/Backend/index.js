@@ -22,33 +22,52 @@ app.use("/api", macronutrientRoutes);
 
 
 //login function
+/*
+ bcrypt youtube link https://youtu.be/AzA_LTDoFqY?si=YW7JPCKFwlzf0pCA
+ */
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
+    console.log("-> Login attempt:", username, password);
 
     try {
-        const check = await db.query("SELECT * FROM users WHERE username = $1", [username]);
+        // Fetch user by username
+        const check = await db.query("SELECT user_id, username, pass FROM users WHERE username = $1", [username]);
 
-        if (check.rows.length > 0) {
-            const user = check.rows[0];
-            const storedPass = user.pass;
+        console.log("-> Database query result:", check.rows); //Debugging
 
-            // Compare hashed password
-            const passwordMatch = await bcrypt.compare(password, storedPass);
-
-            if (passwordMatch) {
-                const token = jwt.sign(
-                    { username: user.username },
-                    process.env.JWT_SECRET,
-                    { expiresIn: '24h' }
-                );
-                res.status(200).json({ message: "Login Successful", token: token });
-            } else {
-                res.status(400).json({ message: "Incorrect Password" });
-            }
-        } else {
-            res.status(404).json({ message: "User not found" });
+        if (check.rows.length === 0) {
+            console.log("User not found.");
+            return res.status(404).json({ error: "User not found" });
         }
+
+        const user = check.rows[0];
+        const storedPass = user.pass;
+
+        // Compare hashed password
+        const passwordMatch = await bcrypt.compare(password, storedPass);
+
+        if (!passwordMatch) {
+            console.log("Incorrect password.");
+            return res.status(400).json({ error: "Incorrect password" });
+        }
+
+        // Generate JWT token including `user_id`
+        const token = jwt.sign(
+            { user_id: user.user_id, username: user.username }, // Include `user_id`
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        console.log("Login successful. User ID:", user.user_id);
+
+        res.status(200).json({
+            message: "Login Successful",
+            user_id: user.user_id, // Now returning `user_id`
+            token: token
+        });
     } catch (err) {
+        console.error("Login error:", err);
         res.status(500).json({ error: "Server error" });
     }
 });
@@ -113,7 +132,20 @@ app.get('/user/:user_id', async (req, res) => {
         console.log("Error: ", err.message);
     }
 })
-
+/*
+ 
+ 
+ 
+ 
+ 
+                                        SIGN UP
+ 
+ 
+ 
+ 
+ 
+ 
+ */
 /*bcrypt youtube video
 https://youtu.be/AzA_LTDoFqY?si=W2SVbxsXv7QGCF-P
  */
@@ -221,27 +253,125 @@ app.get("/check-email", async (req, res) => {
         return res.status(500).json({ available: false, error: "Database error" });
     }
 });
+/*
+                                       
 
 
-// Check if email is taken
-app.get("/check-email", async (req, res) => {
-    try {
-        const { value } = req.query;
-        if (!value) {
-            return res.status(400).json({ available: false, error: "Email is required" });
+
+                                        PROFILE
+ 
+ 
+ 
+ 
+ 
+ 
+ */
+
+//EDIT PROFILE ROUTE
+app.put('/user/:user_id/update', authenticateToken, async (req,res) => {
+    const { user_id } = req.params;
+    const { username, first_name, last_name } = req.body; //gets updated info (except pfp for now)
+
+    try{
+        //if username change, check if its taken. return 400 if yes
+        const result = await db.query('SELECT * FROM users WHERE username = $1 AND user_id != $2', [username, user_id]);
+        if (result.rows.length > 0) {
+          return res.status(400).json({ error: 'Username already taken' });
         }
 
-        const result = await db.query("SELECT COUNT(*) FROM users WHERE email = $1", [value]);
-        const isAvailable = result.rows[0].count == "0"; // If count is 0, email is available
+        //updating fetched info in users table, does not include pfp yet
+        const update = `
+            UPDATE users 
+            SET username = $1, first_name = $2, last_name = $3 
+            WHERE user_id = $4
+            RETURNING user_id, username, first_name, last_name;
+        `;
 
-        return res.json({ available: isAvailable });
-    } catch (error) {
-        console.error("Email check error:", error);
-        return res.status(500).json({ available: false, error: "Database error" });
+        const values = [username, first_name, last_name, user_id];
+
+        const updatedProfile = await db.query(update, values);
+
+        //send back the updated info
+        return res.json(updatedProfile.rows[0]);
+    }
+    catch(err){
+        console.log("An error occured.", err);
+        return res.status(500).json({ error: "An error occured." })
+    }
+
+
+
+});
+
+
+
+/*
+ 
+                                        WORKOUT
+ 
+ 
+ 
+ 
+ */
+// Fetch all exercises
+app.get('/api/exercises', async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM exercises");
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error while fetching exercises" });
+    }
+});
+
+app.get('/api/routines/:user_id', async (req, res) => {
+    const { user_id } = req.params;
+
+    console.log("->Fetching routines for user_id:", user_id); // Debugging
+
+    try {
+        const result = await db.query(
+            "SELECT id, title, exercises FROM routines WHERE user_id = $1",
+            [user_id]
+        );
+
+        console.log("->Routines fetched:", result.rows); //Debugging
+
+        res.json(result.rows); //Ensures JSON response
+    } catch (err) {
+        console.error("Error fetching routines:", err);
+        res.status(500).json({ error: "Failed to fetch routines" });
     }
 });
 
 
-app.listen(3000, () => {
-    console.log(`Server running on http://localhost:3000/`);
-})
+app.post('/api/routines', async (req, res) => {
+    console.log("Incoming request:", req.body);
+
+    try {
+        const { title, exercises, user_id } = req.body; // Include user_id
+
+        if (!title || !exercises || !user_id) {
+            return res.status(400).json({ error: "Title, exercises, and user_id are required" });
+        }
+
+        const result = await db.query(
+            "INSERT INTO routines (title, exercises, user_id) VALUES ($1, $2, $3) RETURNING *",
+            [title, JSON.stringify(exercises), user_id]
+        );
+
+        console.log("Routine saved:", result.rows[0]);
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Error saving routine:", err);
+        res.status(500).json({ error: "Error saving routine" });
+    }
+});
+
+
+
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
