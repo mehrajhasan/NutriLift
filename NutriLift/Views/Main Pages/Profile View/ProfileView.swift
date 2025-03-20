@@ -112,8 +112,7 @@ struct ProfileView: View {
                     
                     Spacer()
                     
-                    //search
-                    Button(action: {}) {
+                    NavigationLink(destination: UserSearch()) {
                         Image(systemName: "magnifyingglass")
                             .font(.title2)
                     }
@@ -146,7 +145,7 @@ struct ProfileView: View {
                         .bold()
                     
                     NavigationLink{
-                        EditProfile()
+                        EditProfileView()
                     } label:{
                         Text("Edit Profile")
                             .foregroundColor(.white)
@@ -249,7 +248,13 @@ struct ProfileView: View {
                 .padding(.top, 150)
             }
             .onAppear {
-                fetchUserProfile(userId: 12)
+                if let userId = UserDefaults.standard.value(forKey: "userId") as? Int {
+                    print("Retrieved userID: \(userId)")
+                    fetchUserProfile(userId: userId)
+                }
+                else{
+                    print("error fetching userid")
+                }
             }
         }
     }
