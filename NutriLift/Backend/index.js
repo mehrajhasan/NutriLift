@@ -253,6 +253,41 @@ app.get("/check-email", async (req, res) => {
     }
 });
 
+//EDIT PROFILE ROUTE
+app.put('/user/:user_id/update', authenticateToken, async (req,res) => {
+    const { user_id } = req.params; 
+    const { username, first_name, last_name } = req.body; //gets updated info (except pfp for now)
+
+    try{
+        //if username change, check if its taken. return 400 if yes
+        const result = await db.query('SELECT * FROM users WHERE username = $1 AND user_id != $2', [username, user_id]);
+        if (result.rows.length > 0) {
+          return res.status(400).json({ error: 'Username already taken' });
+        }
+
+        //updating fetched info in users table, does not include pfp yet
+        const update = `
+            UPDATE users 
+            SET username = $1, first_name = $2, last_name = $3 
+            WHERE user_id = $4
+            RETURNING user_id, username, first_name, last_name;
+        `;
+
+        const values = [username, first_name, last_name, user_id]; 
+
+        const updatedProfile = await db.query(update, values);
+
+        //send back the updated info
+        return res.json(updatedProfile.rows[0]);
+    }
+    catch(err){
+        console.log("An error occured.", err);
+        return res.status(500).json({ error: "An error occured." })
+    }
+
+
+
+});
 
 app.listen(3000, () => {
     console.log(`Server running on http://localhost:3000/`);
