@@ -163,6 +163,9 @@ app.post('/signup', async (req, res) => {
         // Hash password before storing it
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+        //necessary to treat the initial signup tables as one creation
+        await db.query('BEGIN');
+
         // Save user to database
         const result = await db.query(
             'INSERT INTO users (first_name, last_name, email, username, pass) VALUES ($1, $2, $3, $4, $5) RETURNING *',
@@ -170,6 +173,15 @@ app.post('/signup', async (req, res) => {
         );
 
         console.log("User created successfully:", result.rows[0]);
+        const userId = result.rows[0].user_id;
+
+        await db.query(
+            'INSERT INTO userprofiles (user_id, profile_pic, points) VALUES ($1, $2, $3)',
+            [userId, null, 0]
+        );
+
+        //ends
+        await db.query('COMMIT');
 
         return res.status(201).json({
             message: "User created successfully",
