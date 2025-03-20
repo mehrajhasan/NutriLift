@@ -145,7 +145,7 @@ struct ProfileView: View {
                         .bold()
                     
                     NavigationLink{
-                        EditProfile()
+                        EditProfileView()
                     } label:{
                         Text("Edit Profile")
                             .foregroundColor(.white)
