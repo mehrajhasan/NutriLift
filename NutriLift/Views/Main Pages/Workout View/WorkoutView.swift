@@ -6,109 +6,107 @@
 //
 import SwiftUI
 
-struct Routine: Identifiable {
-    let id = UUID()
-    let title: String
-    let exercises: [String]
-}
-
 struct RoutinesView: View {
-    let routines = [
-        Routine(title: "Chest Day (Light Day)", exercises: [
-            "Barbell Bench Press",
-            "Dumbbell Bench Press",
-            "Incline Dumbbell Bench Press",
-            "Suspended Chest Fly",
-            "Cable Rope Overhead Tricep Extensions"
-        ]),
-        Routine(title: "Leg Day", exercises: [
-            "Squats",
-            "Romanian Deadlifts",
-            "Leg Press",
-            "Bulgarian Split Squats",
-            "Lying Hamstring Curls"
-        ]),
-        Routine(title: "Back Day", exercises: [
-            "Deadlifts",
-            "Pull-ups",
-            "Bent-Over Barbell Rows",
-            "Single-Arm Dumbbell Rows",
-            "Seated Cable Rows"
-        ])
-    ]
+    @State private var routines: [Routine] = []
     
     var body: some View {
-        VStack {
-            // Header with Title and Menu Button
-            HStack {
-                Spacer()
-                Text("Routines")
+        NavigationStack {
+            VStack {
+                Text("Workout Routines")
                     .font(.largeTitle)
                     .bold()
-                Spacer()
-                Button(action: { /* Open menu */ }) {
-                    Image(systemName: "line.horizontal.3")
-                        .foregroundColor(.black)
-                        .font(.title)
-                }
-            }
-            .padding()
-            
-            // Create New Routine Button
-            Button(action: { /* Create new routine action */ }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                        .foregroundColor(.white)
+                
+                NavigationLink(destination: CreateRoutineView(routines: $routines)) {
                     Text("Create New Routine")
                         .bold()
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
                 }
-                .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(12)
-            }
-            .padding(.horizontal)
-
-            // Scrollable Routine Cards
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(routines) { routine in
-                        RoutineCard(routine: routine)
+                
+                ScrollView {
+                    LazyVStack(spacing: 15) {
+                        ForEach(routines) { routine in
+                            RoutineCard(routine: routine)
+                        }
                     }
+                    .padding(.horizontal, 16)
                 }
-                .padding()
             }
-
-            Spacer()
+            .onAppear {
+                fetchRoutines()
+            }
         }
-        .navigationTitle("Workout Routines")
+    }
+    
+    func fetchRoutines() {
+        guard let userId = UserDefaults.standard.integer(forKey: "user_id") as? Int else {
+            print("No user ID found.")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/routines/\(userId)") else {
+            print("Invalid API URL.")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Network request failed:", error)
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Server Response Code:", httpResponse.statusCode) // Debug HTTP status
+            }
+            
+            if let data = data {
+                let rawResponse = String(data: data, encoding: .utf8) ?? "No response"
+                print("Raw Server Response:", rawResponse) // Log raw response
+                
+                do {
+                    let decodedData = try JSONDecoder().decode([Routine].self, from: data)
+                    DispatchQueue.main.async {
+                        self.routines = decodedData
+                    }
+                } catch {
+                    print("Error decoding JSON:", error)
+                }
+            }
+        }.resume()
     }
 }
 
-// Routine Card View with Equal Width
 struct RoutineCard: View {
     let routine: Routine
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("\(routine.title) - Preview")
+            Text(routine.title)
                 .font(.title2)
                 .bold()
                 .foregroundColor(.black)
-            
+
             ForEach(routine.exercises, id: \.self) { exercise in
-                Text(exercise)
-                    .foregroundColor(.black.opacity(0.8))
+                Text("• \(exercise)")
+                    .foregroundColor(.gray)
             }
+            Spacer()
         }
         .padding()
-        .frame(maxWidth: .infinity, alignment: .leading) // Ensures equal width
+        .frame(maxWidth: .infinity)
+        .frame(height: 180)
         .background(Color.blue.opacity(0.2))
         .cornerRadius(12)
     }
 }
 
-#Preview {
-    TaskBarView()
+struct RoutinesView_Previews: PreviewProvider {
+    static var previews: some View {
+        RoutinesView()
+    }
 }
+
