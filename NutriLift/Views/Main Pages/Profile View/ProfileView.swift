@@ -96,12 +96,13 @@ struct ProfileView: View {
             ZStack{
                 //header
                 
-                //messaging (?)
                 HStack{
                     Button(action: {}) {
-                        Image(systemName: "bubble.left")
+                        Image(systemName: "bell")
                             .font(.title2)
+                            .foregroundColor(.black)
                     }
+                    
                     
                     Spacer()
                     
@@ -115,6 +116,7 @@ struct ProfileView: View {
                     NavigationLink(destination: UserSearch()) {
                         Image(systemName: "magnifyingglass")
                             .font(.title2)
+                            .foregroundColor(.black)
                     }
                     
                 }
