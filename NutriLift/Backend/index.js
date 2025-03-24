@@ -381,6 +381,48 @@ app.post('/api/routines', async (req, res) => {
 });
 
 
+/*
+ 
+                                        User Search
+ 
+ 
+ 
+ 
+ */
+//search for users
+app.get('/search', async (req,res) => {
+    const { query } = req.query;
+
+    try{
+        const result = await db.query(
+            `SELECT 
+                u.user_id,
+                u.username,
+                u.first_name,
+                u.last_name,
+                up.profile_pic,
+                up.points
+             FROM 
+                Users u
+             JOIN 
+                UserProfiles up ON u.user_id = up.user_id
+             WHERE 
+                u.username ILIKE $1 OR 
+                u.first_name ILIKE $1 OR 
+                u.last_name ILIKE $1`,
+            [`%${query}%`]
+        );
+
+        res.status(200).json(result.rows);
+    }
+    catch(err){
+        console.error("Error searching users:", err.message);
+        res.status(500).json({ error: "Interal server err"});
+    }
+});
+
+
+
 
 
 
