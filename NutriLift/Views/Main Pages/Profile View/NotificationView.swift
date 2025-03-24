@@ -8,8 +8,15 @@
 import SwiftUI
 
 struct NotificationView: View {
+    @State private var notifs: Bool = false
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        if(!notifs){
+            Text("Nothing to see here")
+        }
+        else if(notifs){
+            Text("There are notifications")
+        }
     }
 }
 
