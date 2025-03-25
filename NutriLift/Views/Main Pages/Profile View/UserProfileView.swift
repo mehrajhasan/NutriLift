@@ -1,23 +1,15 @@
 //
-//  ProfileView.swift
+//  UserProfileView.swift
 //  NutriLift
 //
-//  Created by Mehraj Hasan on 3/9/25.
+//  Created by Mehraj Hasan on 3/24/25.
 //
+
 import SwiftUI
 
-//defining db structure for fetching
-struct UserProfile: Codable {
-    let user_id: Int
-    let username: String
-    let first_name: String
-    let last_name: String
-    let email: String?
-    let profile_pic: String?
-    let points: Int
-}
+struct UserProfileView: View {
+    let user: UserProfile
 
-struct ProfileView: View {
     @State private var macroProgress: Double = 0.0 // from 0 to 1
     @State private var caloriesConsumed: Int = 0
     @State private var caloriesGoal: Int = 0
@@ -29,9 +21,6 @@ struct ProfileView: View {
     @State private var last_name: String = "Doe"
     @State private var points: Int = 0
     
-    
-    //need to make dynamic
-    //for progress bar
     var caloriesProgress: Double {
         guard caloriesGoal > 0 else { return 0.0 }
         let prog = Double(caloriesConsumed) / Double(caloriesGoal)
@@ -46,7 +35,7 @@ struct ProfileView: View {
     }
     
     func fetchUserProfile(userId: Int) {
-        guard let url = URL(string: "http://localhost:3000/user/\(userId)") else {
+        guard let url = URL(string: "http://localhost:3000/user/\(user.user_id)") else {
             print("Invalid URL")
             return
         }
@@ -96,28 +85,19 @@ struct ProfileView: View {
             ZStack{
                 //header
                 
+                //messaging (?)
                 HStack{
-                    Button(action: {}) {
-                        Image(systemName: "bell")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
-                    
+
                     
                     Spacer()
                     
                     //profile
-                    Text("Profile")
+                    Text("@\(user.username)")
                         .font(.title)
                         .bold()
                     
                     Spacer()
                     
-                    NavigationLink(destination: UserSearch()) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
                     
                 }
                 .padding(.horizontal)
@@ -142,14 +122,13 @@ struct ProfileView: View {
                 //dynamic
                 //name - edit profile - points
                 VStack{
-                    Text("\(first_name) \(last_name)")
+                    Text("\(user.first_name) \(user.last_name)")
                         .font(.title)
                         .bold()
                     
-                    NavigationLink{
-                        EditProfileView()
+                    Button{
                     } label:{
-                        Text("Edit Profile")
+                        Text("Friend Request")
                             .foregroundColor(.white)
                         //                                        .bold()
                             .font(.callout)
@@ -157,7 +136,7 @@ struct ProfileView: View {
                             .padding(.horizontal, 35)
                             .background(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .fill(Color(hue: 0.544, saturation: 0.11, brightness: 0.73))
+                                    .fill(Color(hue: 0.55033,saturation: 0.9608,brightness: 1))
                                 
                             )
                     }
@@ -171,7 +150,7 @@ struct ProfileView: View {
                         
                         
                         //need to make dynamic for up down
-                        Text("\(points)")
+                        Text("\(user.points)")
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.system(size: 17))
                             .foregroundColor(.green)
@@ -248,6 +227,7 @@ struct ProfileView: View {
                 )
                 .padding(.horizontal)
                 .padding(.top, 150)
+                .blur(radius: 5)
             }
             .onAppear {
                 if let userId = UserDefaults.standard.value(forKey: "userId") as? Int {
@@ -263,7 +243,13 @@ struct ProfileView: View {
 }
 
 #Preview {
-    NavigationStack{
-        ProfileView()
-    }
+    UserProfileView(user: UserProfile(
+            user_id: 1,
+            username: "cbum",
+            first_name: "Chris",
+            last_name: "B.",
+            email: "chris@example.com",
+            profile_pic: nil,
+            points: 99
+        ))
 }

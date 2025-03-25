@@ -98,33 +98,35 @@ struct UserSearch: View {
         ScrollView {
             VStack(spacing: 0) {
                 ForEach(queryResults, id: \.user_id) { user in
-                    HStack {
-                        //fix pfp later when figured out just using tihs for now
-                        Circle()
-                            .fill(Color(red: 0.9, green: 0.9, blue: 1.0))
-                            .frame(width: 50, height: 50)
-                            .overlay(
-                                Image(systemName: "person.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .padding(25)
-                                    .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
-                            )
-                        
-                        //put name and first last under
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(user.username)
-                                .font(.headline)
-                            Text("\(user.first_name) \(user.last_name)")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
+                    NavigationLink(destination: UserProfileView(user: user)) {
+                        HStack {
+                            //fix pfp later when figured out just using tihs for now
+                            Circle()
+                                .fill(Color(red: 0.9, green: 0.9, blue: 1.0))
+                                .frame(width: 50, height: 50)
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .padding(25)
+                                        .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
+                                )
+                            
+                            //put name and first last under
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(user.username)
+                                    .font(.headline)
+                                Text("\(user.first_name) \(user.last_name)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.leading, 8)
+                            
+                            Spacer()
                         }
-                        .padding(.leading, 8)
-                        
-                        Spacer()
+                        .padding(.vertical, 8)
+                        .padding(.horizontal)
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
                 }
             }
         }
