@@ -97,12 +97,11 @@ struct ProfileView: View {
                 //header
                 
                 HStack{
-                    Button(action: {}) {
+                    NavigationLink(destination: NotificationView()){
                         Image(systemName: "bell")
                             .font(.title2)
                             .foregroundColor(.black)
                     }
-                    
                     
                     Spacer()
                     
@@ -258,6 +257,7 @@ struct ProfileView: View {
                     print("error fetching userid")
                 }
             }
+            
         }
     }
 }
