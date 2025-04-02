@@ -20,6 +20,7 @@ struct UserProfileView: View {
     @State private var first_name: String = "John"
     @State private var last_name: String = "Doe"
     @State private var points: Int = 0
+    @State private var friendRequest: Bool = false
     
     var caloriesProgress: Double {
         guard caloriesGoal > 0 else { return 0.0 }
@@ -127,16 +128,16 @@ struct UserProfileView: View {
                         .bold()
                     
                     Button{
+                        friendRequest.toggle()
                     } label:{
-                        Text("Friend Request")
+                        Text(friendRequest ? "Pending" : "Friend Request")
                             .foregroundColor(.white)
-                        //                                        .bold()
                             .font(.callout)
                             .frame(height:30)
                             .padding(.horizontal, 35)
                             .background(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .fill(Color(hue: 0.55033,saturation: 0.9608,brightness: 1))
+                                    .fill(friendRequest ? Color(hue: 0.11, saturation: 0.93, brightness: 0.95) : Color(hue: 0.55033,saturation: 0.9608,brightness: 1))
                                 
                             )
                     }
