@@ -46,18 +46,19 @@ struct loginView: View {
                 print(" Raw Server Response:", rawResponse) // Log the response before decoding
 
                 do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                    print("Parsed JSON:", json ?? "No JSON") // Log parsed JSON
+                     let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                     if let token = json?["token"] as? String {
 
-                    if let userId = json?["user_id"] as? Int {
-                        UserDefaults.standard.set(userId, forKey: "user_id")
-                        UserDefaults.standard.synchronize()
-                        print("User ID saved:", userId)
+                         UserDefaults.standard.set(token, forKey: "userToken")
 
-                        DispatchQueue.main.async {
-                            self.loginSuccess = true
-                            self.onLoginSuccess()
-                        }
+                         //store userID for rest of data processing
+                         if let userId = json?["user_id"] as? Int {
+                             UserDefaults.standard.set(userId, forKey: "userId")
+                         }
+                         
+                         self.loginSuccess = true
+                         print("Login successful.")
+                         self.onLoginSuccess()
                     } else {
                         print("No user ID found in API response.")
                     }

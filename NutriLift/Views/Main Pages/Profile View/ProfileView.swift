@@ -12,7 +12,7 @@ struct UserProfile: Codable {
     let username: String
     let first_name: String
     let last_name: String
-    let email: String
+    let email: String?
     let profile_pic: String?
     let points: Int
 }
@@ -96,11 +96,11 @@ struct ProfileView: View {
             ZStack{
                 //header
                 
-                //messaging (?)
                 HStack{
-                    Button(action: {}) {
-                        Image(systemName: "bubble.left")
+                    NavigationLink(destination: NotificationView()){
+                        Image(systemName: "bell")
                             .font(.title2)
+                            .foregroundColor(.black)
                     }
                     
                     Spacer()
@@ -115,6 +115,7 @@ struct ProfileView: View {
                     NavigationLink(destination: UserSearch()) {
                         Image(systemName: "magnifyingglass")
                             .font(.title2)
+                            .foregroundColor(.black)
                     }
                     
                 }
@@ -256,6 +257,7 @@ struct ProfileView: View {
                     print("error fetching userid")
                 }
             }
+            
         }
     }
 }
