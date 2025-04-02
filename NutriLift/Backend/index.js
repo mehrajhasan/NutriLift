@@ -6,6 +6,7 @@ const db = require('./db');
 
 const app = express();
 app.use(express.json());
+const { v4: uuidv4 } = require('uuid'); //run npm install uuid if not building
 
 // Ensure database connection
 db.connect()
@@ -339,22 +340,29 @@ app.get('/api/exercises', async (req, res) => {
 app.get('/api/routines/:user_id', async (req, res) => {
     const { user_id } = req.params;
 
-    console.log("->Fetching routines for user_id:", user_id); // Debugging
+    console.log("->Fetching routines for user_id:", user_id);
 
     try {
         const result = await db.query(
-            "SELECT id, title, exercises FROM routines WHERE user_id = $1",
+            "SELECT id, title, exercises, user_id FROM routines WHERE user_id = $1",
             [user_id]
         );
 
-        console.log("->Routines fetched:", result.rows); //Debugging
+        const routines = result.rows.map(row => ({
+            id: row.id,
+            title: row.title,
+            user_id: row.user_id,  // Include user_id
+            exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+        }));
 
-        res.json(result.rows); //Ensures JSON response
+        console.log("->Parsed routines:", routines);
+        res.json(routines);
     } catch (err) {
         console.error("Error fetching routines:", err);
         res.status(500).json({ error: "Failed to fetch routines" });
     }
 });
+
 
 
 app.post('/api/routines', async (req, res) => {
@@ -366,13 +374,21 @@ app.post('/api/routines', async (req, res) => {
         if (!title || !exercises || !user_id) {
             return res.status(400).json({ error: "Title, exercises, and user_id are required" });
         }
+        
+        // Map over exercises to add an id to each exercise if it doesn't already have one
+        const exercisesWithIds = exercises.map(ex => ({
+            id: ex.id || uuidv4(),
+            name: ex.name,
+            sets: ex.sets
+        }));
 
+        // Use exercisesWithIds when saving the routine
         const result = await db.query(
             "INSERT INTO routines (title, exercises, user_id) VALUES ($1, $2, $3) RETURNING *",
-            [title, JSON.stringify(exercises), user_id]
+            [title, JSON.stringify(exercisesWithIds), user_id]
         );
 
-        console.log("Routine saved:", result.rows[0]);
+        console.log("Routine saved:", JSON.stringify(result.rows[0], null, 2));
         res.json(result.rows[0]);
     } catch (err) {
         console.error("Error saving routine:", err);

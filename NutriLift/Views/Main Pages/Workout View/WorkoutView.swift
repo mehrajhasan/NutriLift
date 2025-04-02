@@ -16,7 +16,7 @@ struct RoutinesView: View {
                     .font(.largeTitle)
                     .bold()
                 
-                NavigationLink(destination: CreateRoutineView(routines: $routines)) {
+                NavigationLink(destination: RoutineSetupView()) {
                     Text("Create New Routine")
                         .bold()
                         .frame(maxWidth: .infinity)
@@ -43,6 +43,7 @@ struct RoutinesView: View {
     }
     
     func fetchRoutines() {
+        
         guard let userId = UserDefaults.standard.integer(forKey: "user_id") as? Int else {
             print("No user ID found.")
             return
@@ -90,19 +91,33 @@ struct RoutineCard: View {
                 .bold()
                 .foregroundColor(.black)
 
-            ForEach(routine.exercises, id: \.self) { exercise in
-                Text("• \(exercise)")
-                    .foregroundColor(.gray)
+            ForEach(routine.exercises, id: \.id) { exercise in
+                VStack(alignment: .leading, spacing: 2) {
+                    // Display only the exercise name
+                    Text("• \(exercise.name)")
+                        .foregroundColor(.gray)
+                    
+                    // For each set, show weight (lbs) and reps
+                    ForEach(exercise.sets, id: \.id) { set in
+                        HStack {
+                            Text("lbs: \(set.weight)")
+                            Text("Reps: \(set.reps)")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    }
+                }
             }
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .frame(height: 180)
+        .frame(height: 220) // Keep the same height if desired
         .background(Color.blue.opacity(0.2))
         .cornerRadius(12)
     }
 }
+
 
 struct RoutinesView_Previews: PreviewProvider {
     static var previews: some View {
