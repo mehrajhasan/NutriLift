@@ -2,16 +2,19 @@ import SwiftUI
 
 struct AddMealView: View {
     var mealType: String //receives meal type from button tapped
+    var selectedDate: Date //to add meal for the date user chooses and not real time
+    @Environment(\.presentationMode) var presentationMode //sees current status of view
     @AppStorage("user_id") var userID: Int = 0
     @State private var searchText: String = ""
     @State private var meals: [Meal] = []
     
     var body: some View {
-        NavigationView {
+        //NavigationView {
             VStack {
                 // Navigation Bar
                 HStack {
                     Button(action: {
+                        presentationMode.wrappedValue.dismiss() //.dismiss() tells view to close
                         // Back button action
                     }) {
                         Image(systemName: "arrow.left")
@@ -76,8 +79,8 @@ struct AddMealView: View {
                             Text("\(meal.calories) Cal")
                                 .font(.headline)
 
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.gray)
+                            //Image(systemName: "chevron.right")
+                                //.foregroundColor(.gray)
                         }
 
                         // Add-to-DB button
@@ -87,14 +90,15 @@ struct AddMealView: View {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title2)
                                 .foregroundColor(.blue)
-                                .padding(.leading, 8)
+                                //.padding(.leading, 8)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.vertical, 5)
                 }
             }
             .background(Color(.systemGray6))
-        }
+        ///}
     }
     
     // Fetch meals dynamically using API
@@ -137,6 +141,9 @@ struct AddMealView: View {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let isoFormatter = ISO8601DateFormatter()
+        let formattedDate = isoFormatter.string(from: selectedDate)
 
         let body: [String: Any] = [
             "user_id": userID,
@@ -146,7 +153,8 @@ struct AddMealView: View {
             "protein": protein,
             "carbs": carbs,
             "fats": fats,
-            "meal_type": mealType
+            "meal_type": mealType,
+            "created_at": formattedDate
         ]
 
         do {
@@ -210,7 +218,7 @@ struct Nutrient: Identifiable, Decodable {
 
 // Preview
 #Preview {
-    AddMealView(mealType: "Breakfast")
+    AddMealView(mealType: "Breakfast", selectedDate: Date())
 }
 
 

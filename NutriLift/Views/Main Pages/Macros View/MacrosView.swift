@@ -35,7 +35,7 @@ struct MacrosView: View {
                 .padding()
                 
                 // View Summary Button
-                Button(action: { /* View summary action */ }) {
+                NavigationLink(destination: SummaryView(selectedDate: selectedDate, savedMeals: mealsForSelectedDate)) {
                     Text("View Summary")
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -85,7 +85,8 @@ struct MacrosView: View {
                         ForEach(["Breakfast", "Lunch", "Dinner"], id: \.self) { type in
                             MealSectionView(
                                 mealType: type,
-                                meals: mealsForSelectedDate.filter { $0.meal_type == type }
+                                meals: mealsForSelectedDate.filter { $0.meal_type == type },
+                                selectedDate: selectedDate
                             )
                         }
                     }
@@ -129,7 +130,7 @@ struct MacrosView: View {
 struct MealSectionView: View {
     var mealType: String
     var meals: [LoggedMeal]
-    
+    var selectedDate: Date
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(mealType)
@@ -157,7 +158,7 @@ struct MealSectionView: View {
             }
 
             // NavigationLink to AddMealView
-            NavigationLink(destination: AddMealView(mealType: mealType)) {
+            NavigationLink(destination: AddMealView(mealType: mealType, selectedDate: selectedDate)) {
                 Text("Add Meal")
                     .frame(maxWidth: .infinity)
                     .padding()
