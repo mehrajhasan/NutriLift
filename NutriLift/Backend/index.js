@@ -337,10 +337,10 @@ app.get('/api/exercises', async (req, res) => {
     }
 });
 
-app.get('/api/routines/:user_id', async (req, res) => {
-    const { user_id } = req.params;
-
-    console.log("->Fetching routines for user_id:", user_id);
+app.get('/api/routines', authenticateToken, async (req, res) => {
+    // Use the user_id from the token instead of a URL parameter.
+    const user_id = req.user.user_id;
+    console.log("->Fetching routines for user_id from token:", user_id);
 
     try {
         const result = await db.query(
@@ -351,7 +351,7 @@ app.get('/api/routines/:user_id', async (req, res) => {
         const routines = result.rows.map(row => ({
             id: row.id,
             title: row.title,
-            user_id: row.user_id,  // Include user_id
+            user_id: row.user_id,  // This is still returned for reference
             exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
         }));
 
@@ -362,7 +362,6 @@ app.get('/api/routines/:user_id', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch routines" });
     }
 });
-
 
 
 app.post('/api/routines', async (req, res) => {
