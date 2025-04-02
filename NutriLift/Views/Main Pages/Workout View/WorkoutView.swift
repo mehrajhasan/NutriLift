@@ -1,9 +1,10 @@
 //
-//  WorkoutView.swift
+//  WorkoutRoutine.swift
 //  NutriLift
 //
 //  Created by Jairo Iqbal Gil on 3/9/25.
 //
+
 import SwiftUI
 
 struct RoutinesView: View {
@@ -43,8 +44,9 @@ struct RoutinesView: View {
     }
     
     func fetchRoutines() {
-        
-        guard let userId = UserDefaults.standard.integer(forKey: "user_id") as? Int else {
+        let userId = UserDefaults.standard.integer(forKey: "user_id")
+        print("Fetching routines for user id:", userId)
+        guard userId != 0 else {
             print("No user ID found.")
             return
         }
@@ -61,12 +63,12 @@ struct RoutinesView: View {
             }
             
             if let httpResponse = response as? HTTPURLResponse {
-                print("Server Response Code:", httpResponse.statusCode) // Debug HTTP status
+                print("Server Response Code:", httpResponse.statusCode)
             }
             
             if let data = data {
                 let rawResponse = String(data: data, encoding: .utf8) ?? "No response"
-                print("Raw Server Response:", rawResponse) // Log raw response
+                print("Raw Server Response:", rawResponse)
                 
                 do {
                     let decodedData = try JSONDecoder().decode([Routine].self, from: data)
@@ -83,21 +85,54 @@ struct RoutinesView: View {
 
 struct RoutineCard: View {
     let routine: Routine
-
+    @State private var isExpanded: Bool = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(routine.title)
-                .font(.title2)
-                .bold()
-                .foregroundColor(.black)
-
-            ForEach(routine.exercises, id: \.id) { exercise in
+            // Header with title and three-dots menu
+            HStack {
+                Text(routine.title)
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.black)
+                Spacer()
+                Menu {
+                    Button(action: {
+                        // Delete routine action
+                        print("Delete routine: \(routine.title)")
+                    }) {
+                        Label("Delete Routine", systemImage: "trash")
+                    }
+                    Button(action: {
+                        // Toggle expand/collapse
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Label(isExpanded ? "Collapse" : "View Full Routine",
+                              systemImage: isExpanded ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .padding(.horizontal)
+                        .foregroundColor(.black)
+                }
+            }
+            
+            
+            //routine view styling
+            ForEach(
+                isExpanded
+                    ? Array(routine.exercises)
+                    : Array(routine.exercises.prefix(3)),
+                id: \.id
+            ) { exercise in
                 VStack(alignment: .leading, spacing: 2) {
-                    // Display only the exercise name
                     Text("• \(exercise.name)")
                         .foregroundColor(.gray)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                     
-                    // For each set, show weight (lbs) and reps
                     ForEach(exercise.sets, id: \.id) { set in
                         HStack {
                             Text("lbs: \(set.weight)")
@@ -108,20 +143,32 @@ struct RoutineCard: View {
                     }
                 }
             }
+
+            
+            // "Collapse" button if more than 3 exercises and not expanded
+            if !isExpanded && routine.exercises.count > 3 {
+                Button("Viewmore") {
+                    withAnimation {
+                        isExpanded = true
+                    }
+                }
+                .font(.caption)
+                .padding(.top, 5)
+            }
+            
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .frame(height: 220) // Keep the same height if desired
+        // Fixed height when collapsed; automatic when expanded
+        .frame(height: isExpanded ? nil : 220)
         .background(Color.blue.opacity(0.2))
         .cornerRadius(12)
     }
 }
-
 
 struct RoutinesView_Previews: PreviewProvider {
     static var previews: some View {
         RoutinesView()
     }
 }
-
