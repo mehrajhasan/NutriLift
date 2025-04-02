@@ -44,19 +44,25 @@ struct RoutinesView: View {
     }
     
     func fetchRoutines() {
-        let userId = UserDefaults.standard.integer(forKey: "user_id")
-        print("Fetching routines for user id:", userId)
-        guard userId != 0 else {
-            print("No user ID found.")
-            return
-        }
-        
-        guard let url = URL(string: "http://localhost:3000/api/routines/\(userId)") else {
+        // If you need to check for a stored token (and/or user ID), do so here.
+        // Since the endpoint now derives the user from the token, we use that.
+        guard let url = URL(string: "http://localhost:3000/api/routines") else {
             print("Invalid API URL.")
             return
         }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        // Create a URLRequest so we can add custom headers
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        // Add Authorization header if token is available
+        if let token = UserDefaults.standard.string(forKey: "token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        } else {
+            print("No token found in UserDefaults.")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Network request failed:", error)
                 return
@@ -119,8 +125,7 @@ struct RoutineCard: View {
                 }
             }
             
-            
-            //routine view styling
+            // Routine view styling - show only first three exercises if not expanded
             ForEach(
                 isExpanded
                     ? Array(routine.exercises)
@@ -143,9 +148,8 @@ struct RoutineCard: View {
                     }
                 }
             }
-
             
-            // "Collapse" button if more than 3 exercises and not expanded
+            // "Viewmore" button if more than 3 exercises and not expanded
             if !isExpanded && routine.exercises.count > 3 {
                 Button("Viewmore") {
                     withAnimation {
