@@ -3,7 +3,9 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
-
+/*
+ Make sure to use these response codes for console https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+ */
 const app = express();
 app.use(express.json());
 const { v4: uuidv4 } = require('uuid'); //run npm install uuid if not building
@@ -238,7 +240,7 @@ app.get("/check-username", async (req, res) => {
         const result = await db.query("SELECT COUNT(*) FROM users WHERE username = $1", [value]);
         const isAvailable = result.rows[0].count == "0"; // If count is 0, username is available
 
-        console.log(`Checking username: "${value}" - Available: ${isAvailable}`); // 🔹 Logs check
+        console.log(`Checking username: "${value}" - Available: ${isAvailable}`);
 
         return res.json({ available: isAvailable });
     } catch (error) {
@@ -248,6 +250,7 @@ app.get("/check-username", async (req, res) => {
 });
 
 // Check if email is taken
+//Notes:
 app.get("/check-email", async (req, res) => {
     try {
         const { value } = req.query;
@@ -258,7 +261,7 @@ app.get("/check-email", async (req, res) => {
         const result = await db.query("SELECT COUNT(*) FROM users WHERE email = $1", [value]);
         const isAvailable = result.rows[0].count == "0"; // If count is 0, email is available
 
-        console.log(`Checking email: "${value}" - Available: ${isAvailable}`); //Logs check
+        console.log(`Checking email: "${value}" - Available: ${isAvailable}`);
 
         return res.json({ available: isAvailable });
     } catch (error) {
@@ -327,6 +330,7 @@ app.put('/user/:user_id/update', authenticateToken, async (req,res) => {
  
  */
 // Fetch all exercises
+//
 app.get('/api/exercises', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM exercises");
@@ -336,9 +340,12 @@ app.get('/api/exercises', async (req, res) => {
         res.status(500).json({ error: "Server error while fetching exercises" });
     }
 });
-
+/*
+ How to use Json stringify
+ https://www.w3schools.com/js/js_json_stringify.asp
+*/
 app.get('/api/routines', authenticateToken, async (req, res) => {
-    // Use the user_id from the token instead of a URL parameter.
+    // Use the user_id from the token instead of a URL parameter. (Fixed this)
     const user_id = req.user.user_id;
     console.log("->Fetching routines for user_id from token:", user_id);
 
@@ -351,7 +358,7 @@ app.get('/api/routines', authenticateToken, async (req, res) => {
         const routines = result.rows.map(row => ({
             id: row.id,
             title: row.title,
-            user_id: row.user_id,  // This is still returned for reference
+            user_id: row.user_id,  // This is still returned for reference DONT DELTEE
             exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
         }));
 
