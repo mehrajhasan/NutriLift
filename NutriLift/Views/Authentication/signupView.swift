@@ -247,6 +247,7 @@ struct signupView: View {
     }
     
     func checkUsernameAvailability() {
+        //Link to website: https://tarkalabs.com/blogs/debounce-in-swift/
         // Cancel any previous timer to debounce the requests
         usernameDebounceTimer?.invalidate()
         

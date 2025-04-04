@@ -37,7 +37,7 @@ struct RoutineSetupView: View {
                 }
                 .padding(.horizontal)
             }
-            .frame(height: 300) // optional: adjust to your UI
+            .frame(height: 300)
 
 
             Spacer()

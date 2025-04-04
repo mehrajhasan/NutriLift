@@ -57,7 +57,7 @@ struct SaveRoutineView: View {
             "user_id": userId,
             "exercises": exercises.map { exercise in
                 return [
-                    "id": exercise.id, // include exercise id if needed
+                    "id": exercise.id, // include exercise id from dataset
                     "name": exercise.name,
                     "sets": exercise.sets.map { set in
                         return [

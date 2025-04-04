@@ -8,6 +8,9 @@
 import SwiftUI
 import Foundation
 
+/*
+ UUID Link: https://developer.apple.com/documentation/foundation/uuid
+ */
 
 struct WorkoutRoutineView: View {
     @State private var selectedExercises: [ExerciseEntry] = []

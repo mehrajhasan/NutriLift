@@ -8,6 +8,10 @@
 import SwiftUI
 import Foundation
 
+/*
+ Notes: Might have to find alternative to UUID can make Sql slower as it unbalances B tree
+ */
+
 struct SetEntry: Codable, Identifiable, Equatable {
     var id: String = UUID().uuidString
     var weight: String
