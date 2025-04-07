@@ -4,7 +4,7 @@ struct AddMealView: View {
     var mealType: String //receives meal type from button tapped
     var selectedDate: Date //to add meal for the date user chooses and not real time
     @Environment(\.presentationMode) var presentationMode //sees current status of view
-    @AppStorage("user_id") var userID: Int = 0
+    @AppStorage("userId") var userID: Int = 0
     @State private var searchText: String = ""
     @State private var meals: [Meal] = []
     

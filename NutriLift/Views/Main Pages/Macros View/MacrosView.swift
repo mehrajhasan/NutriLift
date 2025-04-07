@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MacrosView: View {
-    @AppStorage("user_id") var userID: Int = 0
+    @AppStorage("userId") var userID: Int = 0
     @State private var selectedDate = Date()
     @State private var savedMeals: [LoggedMeal] = []
     
