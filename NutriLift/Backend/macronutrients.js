@@ -64,7 +64,7 @@ router.get("/usda/search/:query", async (req, res) => {
             params: {
                 api_key: apiKey,
                 query,
-                pageSize: 5
+                pageSize: 10 //changing from 5 to 10 to see if it helps with search list having better results
             }
         });
 
