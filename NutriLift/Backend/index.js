@@ -345,6 +345,17 @@ app.get('/api/exercises', async (req, res) => {
  https://www.w3schools.com/js/js_json_stringify.asp
 */
 app.get('/api/routines', authenticateToken, async (req, res) => {
+
+    /*
+                        OLD GET ROUTE
+     
+     app.get('/api/routines/:user_id', async (req, res) => {
+         const { user_id } = req.params;
+         console.log("->Fetching routines for user_id:", user_id);
+     
+     */
+    
+    
     // Use the user_id from the token instead of a URL parameter. (Fixed this)
     const user_id = req.user.user_id;
     console.log("->Fetching routines for user_id from token:", user_id);
