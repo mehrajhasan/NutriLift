@@ -15,7 +15,6 @@ struct MacrosView: View {
         }
     }
 
-
     var body: some View {
         NavigationView {  // Wrap everything in NavigationView
             VStack {
@@ -79,6 +78,13 @@ struct MacrosView: View {
                 }
                 .padding()
                 
+                ScrollView {
+                    mealSections
+                        .padding()
+                }
+                //COMMENTING THIS PART OUT BECAUSE CODE NEEDS TO BE BROKEN UP INTO SMALLER PARTS. PRIOR ERROR:
+                //"The compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+                /*:
                 // Scrollable Meal Sections
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
@@ -86,12 +92,14 @@ struct MacrosView: View {
                             MealSectionView(
                                 mealType: type,
                                 meals: mealsForSelectedDate.filter { $0.meal_type == type },
-                                selectedDate: selectedDate
+                                selectedDate: selectedDate,
+                                deleteButton: deleteMeal
                             )
                         }
                     }
                     .padding()
                 }
+                */
 
                 Spacer()
             }
@@ -99,6 +107,20 @@ struct MacrosView: View {
                 fetchMeals()
             }
             //.navigationTitle("Daily Macros Page")
+        }
+    }
+    var mealSections: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            ForEach(["Breakfast", "Lunch", "Dinner"], id: \.self) { type in
+                MealSectionView(
+                    mealType: type,
+                    meals: mealsForSelectedDate.filter { $0.meal_type == type },
+                    selectedDate: selectedDate,
+                    deleteButton: { meal in
+                        deleteMeal(mealID: meal.id)
+                    }
+                )
+            }
         }
     }
 
@@ -124,6 +146,10 @@ struct MacrosView: View {
             }
         }.resume()
     }
+    
+    func deleteMeal(mealID: Int) { //placeholder until I implemenet function.
+        print("This will delete a meal once implemented")
+    }
 }
 
 // Meal Section Component
@@ -131,6 +157,7 @@ struct MealSectionView: View {
     var mealType: String
     var meals: [LoggedMeal]
     var selectedDate: Date
+    var deleteButton: (LoggedMeal) -> Void //will allow deleteMeal function to be passed in.
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(mealType)
@@ -144,12 +171,21 @@ struct MealSectionView: View {
                     .italic()
             } else {
                 ForEach(meals) { meal in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(meal.food_name)
-                            .font(.headline)
-                        Text("\(meal.calories) cal - \(meal.protein)g protein - \(meal.carbs)g carbs - \(meal.fats)g fat")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+                    HStack{
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(meal.food_name)
+                                .font(.headline)
+                            Text("\(meal.calories) cal - \(meal.protein)g protein - \(meal.carbs)g carbs - \(meal.fats)g fat")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        Button(action: {
+                            deleteButton(meal)
+                        }) {
+                            Image(systemName: "trash")
+                                .foregroundStyle(.red)
+                        }
                     }
                     .padding(6)
                     .background(Color.white)
