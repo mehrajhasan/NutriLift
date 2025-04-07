@@ -44,8 +44,13 @@ struct RoutinesView: View {
     }
     
     func fetchRoutines() {
-        // If you need to check for a stored token (and/or user ID), do so here.
-        // Since the endpoint now derives the user from the token, we use that.
+        /*
+        Upadted a bug used the old token variable while handing the FK userToken
+        Works and checked the FK  - Jairo
+         */
+        
+        
+       // Since the endpoint now derives the user from the token, we use that.
         guard let url = URL(string: "http://localhost:3000/api/routines") else {
             print("Invalid API URL.")
             return
@@ -56,7 +61,7 @@ struct RoutinesView: View {
         request.httpMethod = "GET"
         
         // Add Authorization header if token is available
-        if let token = UserDefaults.standard.string(forKey: "token") {
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         } else {
             print("No token found in UserDefaults.")
@@ -164,7 +169,7 @@ struct RoutineCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        // Fixed height when collapsed; automatic when expanded
+        // Fixed height when collapsed is automatic when expanded
         .frame(height: isExpanded ? nil : 220)
         .background(Color.blue.opacity(0.2))
         .cornerRadius(12)
