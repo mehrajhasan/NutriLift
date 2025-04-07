@@ -38,7 +38,7 @@ struct loginView: View {
             }
 
             if let httpResponse = response as? HTTPURLResponse {
-                print(" Server Response Code:", httpResponse.statusCode) // Debug HTTP status
+                print(" Server Response Code:", httpResponse.statusCode)
             }
 
             if let data = data {
@@ -51,7 +51,6 @@ struct loginView: View {
 
                          UserDefaults.standard.set(token, forKey: "userToken")
 
-                         //store userID for rest of data processing
                          if let userId = json?["user_id"] as? Int {
                              UserDefaults.standard.set(userId, forKey: "userId")
                          }
@@ -206,4 +205,3 @@ struct loginView: View {
     #Preview {
         loginView(onLoginSuccess: {})
     }
-
