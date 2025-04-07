@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MacrosView: View {
-    @AppStorage("userId") var userID: Int = 0
+    @AppStorage("userId") var userID: Int = 0 //changed user_id to userID as thats what was used in loginview. Maybe that is current issue with userid constantly storing on user id 30? As notes by Jairo: when a user logs in, we set the primary key (user_id) into a foreign key (userID) that other tables on db use. So contacting primary key won't work
     @State private var selectedDate = Date()
     @State private var savedMeals: [LoggedMeal] = []
     

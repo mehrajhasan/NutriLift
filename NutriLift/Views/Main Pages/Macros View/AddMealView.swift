@@ -4,7 +4,7 @@ struct AddMealView: View {
     var mealType: String //receives meal type from button tapped
     var selectedDate: Date //to add meal for the date user chooses and not real time
     @Environment(\.presentationMode) var presentationMode //sees current status of view
-    @AppStorage("userId") var userID: Int = 0
+    @AppStorage("userId") var userID: Int = 0 //changed user_id to userID as thats what was used in loginview. Maybe that is current issue with userid constantly storing on user id 30? As notes by Jairo: when a user logs in, we set the primary key (user_id) into a foreign key (userID) that other tables on db use. So contacting primary key won't work
     @State private var searchText: String = ""
     @State private var meals: [Meal] = []
     
