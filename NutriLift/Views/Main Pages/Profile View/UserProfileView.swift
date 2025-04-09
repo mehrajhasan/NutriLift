@@ -81,12 +81,75 @@ struct UserProfileView: View {
         }.resume()
     }
     
+    //send friend req
+    func sendFriendReq(){
+        guard let url = URL(string: "http://localhost:3000/friend-req") else {
+            print("Invalid URL")
+            return
+        }
+        
+        //get logged in user id from UserDefaults
+        let sender_id = UserDefaults.standard.integer(forKey: "userId")
+        
+        //need to send body since post request
+        //just holds the logged in user id and id of the person ur sending friend req to
+        let body = [
+            "sender_id": sender_id,
+            "receiver_id": user.user_id
+        ]
+        
+//        //check to see if working WORKS FINE!
+//        print(sender_id)
+//        print(user.user_id)
+        
+        //decode, if we dont server gets undefined
+        let bodyData = try? JSONSerialization.data(
+            withJSONObject: body,
+            options: []
+        )
+        
+        //set headers n stuff
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
+        
+        //auth stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            //if server processes the friend req, set to true so we can change ui status
+            //else send issue (need to update ui for that)
+            DispatchQueue.main.async {
+                if httpResponse.statusCode == 200 {
+                    print("Friend request sent.")
+                    friendRequest = true;
+                } else {
+                    print("Server returned status code: \(httpResponse.statusCode)")
+                }
+            }
+                
+            
+        }.resume()
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack{
                 //header
-                
-                //messaging (?)
                 HStack{
 
                     
@@ -128,8 +191,10 @@ struct UserProfileView: View {
                         .bold()
                     
                     Button{
-                        friendRequest.toggle()
+                        //send a friend req wehn clikced
+                        sendFriendReq()
                     } label:{
+                        //toggles based on bool value
                         Text(friendRequest ? "Pending" : "Friend Request")
                             .foregroundColor(.white)
                             .font(.callout)
