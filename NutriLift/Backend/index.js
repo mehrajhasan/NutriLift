@@ -454,6 +454,36 @@ app.get('/search', async (req,res) => {
     }
 });
 
+/*
+ 
+                                        FRIENDS SYSTEM
+ 
+ 
+ 
+ 
+*/
+
+//send a friend request
+app.post('/friend-req', authenticateToken, async (req, res) => {
+    const { sender_id, receiver_id } = req.body; //get the id from person sending and person receiving the frined req
+    console.log('trying friend request');
+    // console.log("sending from user: ", sender_id); //making sure it passes properly
+    // console.log("to user: ", receiver_id);
+    try{    
+        //alr sets value to default initially from db setup
+        await db.query(
+            `INSERT INTO friend_requests (sender_id, receiver_id) VALUES ($1,$2)`,
+            [sender_id,receiver_id]
+        );
+
+        res.status(200).json({ message: "Friend request successfully sent" });
+        console.log("successfully sent request sent from user", sender_id, "to user", receiver_id);
+    }
+    catch(err){
+        console.log("error sending friend request");
+        res.status(500).json({ error: "Server error" });
+    }
+});
 
 
 
