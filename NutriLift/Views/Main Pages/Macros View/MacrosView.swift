@@ -148,7 +148,23 @@ struct MacrosView: View {
     }
     
     func deleteMeal(mealID: Int) { //placeholder until I implemenet function.
-        print("This will delete a meal once implemented")
+        //print("This will delete a meal once implemented")
+        guard let url = URL(string: "http://localhost:3000/api/macros/\(mealID)") else {
+            print("There is an error with the delete URL in the deleteMeal function")
+            return
+        }
+        
+        var request = URLRequest(url: url)  //creating URL request object with above url
+        request.httpMethod = "DELETE"   //telling server about request to remove an item
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Couldn't delete meal. See error:", error) //should let us know if error occured when requesting for deletion
+                return
+            }
+            DispatchQueue.main.async {
+                fetchMeals()    //fetch the meals again after deletion. Deleted meal shouldn't show up no more
+            }
+        }.resume()
     }
 }
 
