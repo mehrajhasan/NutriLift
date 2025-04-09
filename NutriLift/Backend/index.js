@@ -463,7 +463,7 @@ app.get('/search', async (req,res) => {
  
 */
 
-//send a friend request
+//send a friend request && add to notifs
 app.post('/friend-req', authenticateToken, async (req, res) => {
     const { sender_id, receiver_id } = req.body; //get the id from person sending and person receiving the frined req
     console.log('trying friend request');
@@ -471,13 +471,32 @@ app.post('/friend-req', authenticateToken, async (req, res) => {
     // console.log("to user: ", receiver_id);
     try{    
         //alr sets value to default initially from db setup
+        //log the friend req
         await db.query(
             `INSERT INTO friend_requests (sender_id, receiver_id) VALUES ($1,$2)`,
             [sender_id,receiver_id]
         );
 
-        res.status(200).json({ message: "Friend request successfully sent" });
+
+        //get the username to log for notification message from sender_id
+        const senderCheck = await db.query(
+            `SELECT username FROM users WHERE user_id = $1`,
+            [sender_id]
+        );
+
+        const senderUsername = senderCheck.rows[0].username;
+        console.log("the sender username is: ", senderUsername); //checking if correct
+        const message = `${senderUsername} sent you a friend request.`;
+
+        //log the request into notifications table (to display later), message is what will pop up in notif view
+        await db.query(
+            `INSERT INTO notifications (user_id, message) VALUES ($1,$2)`,
+            [receiver_id, message]
+        )
+
+        console.log("successfully added notif to user", receiver_id, "notifications");
         console.log("successfully sent request sent from user", sender_id, "to user", receiver_id);
+        res.status(200).json({ message: "Friend request successfully sent" });
     }
     catch(err){
         console.log("error sending friend request");
