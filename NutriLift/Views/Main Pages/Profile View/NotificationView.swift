@@ -69,18 +69,82 @@ struct NotificationView: View {
         }.resume()
     }
     
+    //calculate time since received notif, timestamp is ugly
+    func timeSinceNoti(){
+        
+    }
+    
+    //fucn for accepting a friend req
+    func acceptRequest(){
+        
+    }
+    
+    //func for rejecting  a friend req
+    func declineRequest(){
+        
+    }
+    
     var body: some View {
         ScrollView{
             VStack(spacing: 0){
+                Text("Notifications")
+                    .font(.title)
+                    .bold()
+                    .padding(.vertical, -5)
+                Spacer()
                 //for each notif, print xyz (this isnt the styling jsut testing stuff rn)
                 //i wanna add the profile pic as well and let users click their prof too
+                //likely need to add 'type' to table and add conditions for type of notif
                 ForEach(notifications, id: \.notif_id){ notification in
-                    VStack(alignment: .leading){
+                    HStack{
+                        //just here till pfp complete
+                        Circle()
+                            .fill(Color(red: 0.9, green: 0.9, blue: 1.0))
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding(25)
+                                    .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
+                            )
+                        
                         Text(notification.message)
-                            .font(.headline)
-                        Text(notification.created_at)
-                            .font(.title3)
+                            .font(.callout)
+//                        Text(notification.created_at)
+//                            .font(.title3)
+                        Spacer()
+                        Button{
+                            acceptRequest() //not working yet
+                        } label: {
+                            Text("Accept")
+                                .foregroundColor(.white)
+                                .font(.footnote)
+                                .frame(height:30)
+                                .padding(.horizontal, 10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color(.blue))
+                                    
+                                )
+                        }
+                        Button{
+                            declineRequest() //not working yet
+                        } label: {
+                            Text("Deny")
+                                .foregroundColor(.black)
+                                .font(.footnote)
+                                .frame(height:30)
+                                .padding(.horizontal, 15)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color(.lightGray))
+                                    
+                                )
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
                 }
             }
         }
@@ -94,8 +158,28 @@ struct NotificationView: View {
             }
         }
     }
+    
 }
 
 #Preview {
     NotificationView()
 }
+//testing
+//#Preview {
+//    NotificationView(notifications: [
+//        Notification(
+//            notif_id: 1,
+//            user_id: 123,
+//            message: "Mehraj sent you a friend request.",
+//            is_read: false,
+//            created_at: "2025-04-14T10:00:00Z"
+//        ),
+//        Notification(
+//            notif_id: 2,
+//            user_id: 13,
+//            message: "Jake sent you a friend request.",
+//            is_read: false,
+//            created_at: "2025-04-14T10:00:00Z"
+//        )
+//    ])
+//}
