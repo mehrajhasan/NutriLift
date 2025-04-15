@@ -509,7 +509,6 @@ app.post('/friend-req', authenticateToken, async (req, res) => {
 app.get('/:user_id/notifications', authenticateToken, async (req,res) => {
     const { user_id } = req.params;
 
-    //!!!!NEED TO ADD AUTHENTICATION TOKEN!!!!!, not there rn for testing purposes since no code for NotificationView yet
     try{
         //read the info from db
         const result = await db.query(
@@ -520,7 +519,7 @@ app.get('/:user_id/notifications', authenticateToken, async (req,res) => {
                 is_read,
                 created_at
             FROM
-                notifications
+                notifications 
             WHERE
                 user_id = $1
             `,
