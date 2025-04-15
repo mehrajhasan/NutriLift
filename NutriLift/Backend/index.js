@@ -506,7 +506,7 @@ app.post('/friend-req', authenticateToken, async (req, res) => {
 
 //notification screen for users
 //display notifs from us, friend req/accept/etc
-app.get('/:user_id/notifications', async (req,res) => {
+app.get('/:user_id/notifications', authenticateToken, async (req,res) => {
     const { user_id } = req.params;
 
     //!!!!NEED TO ADD AUTHENTICATION TOKEN!!!!!, not there rn for testing purposes since no code for NotificationView yet
@@ -514,6 +514,8 @@ app.get('/:user_id/notifications', async (req,res) => {
         //read the info from db
         const result = await db.query(
             `SELECT 
+                notif_id,
+                user_id,
                 message,
                 is_read,
                 created_at
@@ -527,6 +529,7 @@ app.get('/:user_id/notifications', async (req,res) => {
 
         //just checking rn (works)
         console.log(result.rows)
+        res.status(200).json(result.rows);
 
         //store the values sep for every notif
     }
