@@ -539,6 +539,38 @@ app.get('/:user_id/notifications', authenticateToken, async (req,res) => {
     }
 })
 
+//get friend requests for friend req view
+app.get('/:user_id/friend-requests', authenticateToken, async (req, res) => {
+    const { user_id } = req.params;
+    
+    try{
+        //essentially same as search query, but from friend requests and one more join
+        const result = await db.query(
+            `SELECT 
+                u.user_id,
+                u.username,
+                u.first_name,
+                u.last_name,
+                up.profile_pic,
+                up.points
+            FROM
+                friend_requests f
+            JOIN Users u ON u.user_id = f.sender_id
+            JOIN UserProfiles up ON u.user_id = up.user_id
+            WHERE 
+                f.receiver_id = $1`,
+            [user_id]
+        )
+
+        console.log(result.rows);
+        res.status(200).json(result.rows);
+    }
+    catch(err){
+        console.log("error fetching friend requests");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
 
 
 
