@@ -91,10 +91,41 @@ struct NotificationView: View {
                     .font(.title)
                     .bold()
                     .padding(.vertical, -5)
+                    Spacer()
+                
                 Spacer()
-                //for each notif, print xyz (this isnt the styling jsut testing stuff rn)
-                //i wanna add the profile pic as well and let users click their prof too
-                //likely need to add 'type' to table and add conditions for type of notif
+                
+                //replacing with friend requests view
+                NavigationLink(destination: FriendRequestView()){
+                    HStack(spacing: 15){
+                        ZStack {
+                            Circle()
+                                .fill(Color.blue.opacity(0.1))
+                                .frame(width: 50, height: 50)
+                            Image(systemName: "person.badge.plus")
+                                .font(.system(size: 22))
+                                .foregroundColor(.blue)
+                        }
+                        
+                        VStack{
+                            Text("Friend requests")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.vertical, 12.5)
+                    .padding(.horizontal)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
+                
+                //normal notifs from us (not friend requests)
                 ForEach(notifications, id: \.notif_id){ notification in
                     HStack{
                         //just here till pfp complete
@@ -162,7 +193,9 @@ struct NotificationView: View {
 }
 
 #Preview {
-    NotificationView()
+    NavigationStack{
+        NotificationView()
+    }
 }
 //testing
 //#Preview {
