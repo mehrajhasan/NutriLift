@@ -74,34 +74,16 @@ struct NotificationView: View {
         
     }
     
-    //fucn for accepting a friend req
-    func acceptRequest(){
-        
-    }
-    
-    //func for rejecting  a friend req
-    func declineRequest(){
-        
-    }
-    
     var body: some View {
         ScrollView{
             VStack(spacing: 0){
-                Text("Notifications")
-                    .font(.title)
-                    .bold()
-                    .padding(.vertical, -5)
-                    Spacer()
-                
-                Spacer()
-                
                 //replacing with friend requests view
                 NavigationLink(destination: FriendRequestView()){
                     HStack(spacing: 15){
                         ZStack {
                             Circle()
                                 .fill(Color.blue.opacity(0.1))
-                                .frame(width: 50, height: 50)
+                                .frame(width: 40, height: 40)
                             Image(systemName: "person.badge.plus")
                                 .font(.system(size: 22))
                                 .foregroundColor(.blue)
@@ -125,57 +107,22 @@ struct NotificationView: View {
                     .padding(.horizontal)
                 }
                 
+                
+                
                 //normal notifs from us (not friend requests)
                 ForEach(notifications, id: \.notif_id){ notification in
                     HStack{
-                        //just here till pfp complete
-                        Circle()
-                            .fill(Color(red: 0.9, green: 0.9, blue: 1.0))
-                            .frame(width: 50, height: 50)
-                            .overlay(
-                                Image(systemName: "person.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .padding(25)
-                                    .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
-                            )
-                        
                         Text(notification.message)
-                            .font(.callout)
-//                        Text(notification.created_at)
-//                            .font(.title3)
+                            .font(.body)
                         Spacer()
-                        Button{
-                            acceptRequest() //not working yet
-                        } label: {
-                            Text("Accept")
-                                .foregroundColor(.white)
-                                .font(.footnote)
-                                .frame(height:30)
-                                .padding(.horizontal, 10)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .fill(Color(.blue))
-                                    
-                                )
-                        }
-                        Button{
-                            declineRequest() //not working yet
-                        } label: {
-                            Text("Deny")
-                                .foregroundColor(.black)
-                                .font(.footnote)
-                                .frame(height:30)
-                                .padding(.horizontal, 15)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .fill(Color(.lightGray))
-                                    
-                                )
-                        }
+                        
+                        Text("1hr ago")
+                            .font(.footnote)
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 16)
+                    Divider()
+                        .frame(width: 350, height: 1)
                 }
             }
         }
@@ -188,8 +135,9 @@ struct NotificationView: View {
                 print("error fetching userid")
             }
         }
+        .navigationTitle("Notifications")
+
     }
-    
 }
 
 #Preview {
@@ -197,22 +145,3 @@ struct NotificationView: View {
         NotificationView()
     }
 }
-//testing
-//#Preview {
-//    NotificationView(notifications: [
-//        Notification(
-//            notif_id: 1,
-//            user_id: 123,
-//            message: "Mehraj sent you a friend request.",
-//            is_read: false,
-//            created_at: "2025-04-14T10:00:00Z"
-//        ),
-//        Notification(
-//            notif_id: 2,
-//            user_id: 13,
-//            message: "Jake sent you a friend request.",
-//            is_read: false,
-//            created_at: "2025-04-14T10:00:00Z"
-//        )
-//    ])
-//}
