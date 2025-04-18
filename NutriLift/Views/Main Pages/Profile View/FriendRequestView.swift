@@ -70,12 +70,6 @@ struct FriendRequestView: View {
     }
     
     var body: some View {
-        Text("Friend Requests")
-            .font(.title)
-            .bold()
-            .padding(.vertical, -5)
-            Spacer()
-        
         ScrollView {
             VStack(spacing: 0) {
                 ForEach(requests, id: \.user_id) { user in
@@ -149,6 +143,7 @@ struct FriendRequestView: View {
                     print("error fetching userid")
                 }
             }
+            .navigationTitle("Friend Requests")
     }
 }
 
