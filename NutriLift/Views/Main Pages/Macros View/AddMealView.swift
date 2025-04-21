@@ -142,8 +142,14 @@ struct AddMealView: View {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let isoFormatter = ISO8601DateFormatter()
-        let formattedDate = isoFormatter.string(from: selectedDate)
+        //let isoFormatter = ISO8601DateFormatter()
+        //let formattedDate = isoFormatter.string(from: selectedDate)   //was causing date to be stored in next date. possibly a time zone issue?
+        
+        
+        let dateFormatter = DateFormatter() //apple dev formatter that converts between date objects to strings
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)    //should treat all time like they're same
+        let formattedDate = dateFormatter.string(from: selectedDate) + "T00:00:00.000Z" //convert selectedDate into string, then append to make time to midnight UTC to match database timestamps
 
         let body: [String: Any] = [
             "user_id": userID,
