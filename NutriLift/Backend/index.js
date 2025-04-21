@@ -571,6 +571,33 @@ app.get('/:user_id/friend-requests', authenticateToken, async (req, res) => {
     }
 })
 
+//accepting a friend request and forming a friendship
+app.post('/:user_id/friend-request/accept', authenticateToken, async (req, res) => {
+    const { sender_id, receiver_id } = req.body;
+    console.log("attempting to accept a friend request")
+    try{
+        //insert the friendship into the friendship table
+        await db.query(
+            `INSERT INTO friendships (user_id1, user_id2) VALUES ($1,$2)`,
+            [sender_id,receiver_id]
+        );
+
+        //delete the record from the friend requests table
+        await db.query(
+            `DELETE FROM friend_requests
+            WHERE sender_id = $1 AND receiver_id = $2
+            `,
+            [sender_id, receiver_id]
+        )
+        
+        console.log("User", receiver_id, "accepted friend request from", sender_id);
+    }
+    catch(err){
+        console.log("error accepting a friend request");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
 
 
 
