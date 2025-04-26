@@ -621,6 +621,37 @@ app.post('/:user_id/friend-request/deny', authenticateToken, async (req, res) =>
     }
 })
 
+//get the status of user and target to display userprofile accordingly
+app.get('/:user_id/friend-status/:target', async (req, res) => {
+    const { user_id, target } = req.params;
+    console.log("checking status between", user_id, "and", target);
+
+    try{
+        //check if they are friends
+        const friendResult = await db.query(
+            `SELECT * FROM friendships 
+            WHERE (user_id1 = $1 AND user_id2 = $2) OR (user_id2 = $1 AND user_id1 = $2)`,
+            [user_id, target]
+        );
+
+        const isFriend = friendResult.rows.length > 0;
+
+        const pendingResult = await db.query(
+            `SELECT * FROM friend_requests
+            WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)`,
+            [user_id, target]
+        );
+
+        const isPending = pendingResult.rows.length > 0;
+
+        res.status(200).json({isFriend,isPending});
+    }
+    catch(err){
+        console.log("error checking status of relation");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
 
 
 
