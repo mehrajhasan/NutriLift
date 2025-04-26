@@ -598,6 +598,29 @@ app.post('/:user_id/friend-request/accept', authenticateToken, async (req, res) 
     }
 })
 
+//denies an incoming friend request 
+app.post('/:user_id/friend-request/deny', authenticateToken, async (req, res) => {
+    //similar to accept logic, just deleting a rec
+    const { sender_id, receiver_id } = req.body;
+    console.log("attepting to reject a friend request")
+
+    try{
+        //just need to delete from friend requests table
+        await db.query(
+            `DELETE FROM friend_requests
+            WHERE sender_id = $1 AND receiver_id = $2
+            `,
+            [sender_id, receiver_id]
+        )
+
+        console.log("User", receiver_id, "rejected friend request from", sender_id);
+    }
+    catch(err){
+        console.log("error rejecting a friend request");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
 
 
 
