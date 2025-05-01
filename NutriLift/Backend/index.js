@@ -652,6 +652,44 @@ app.get('/:user_id/friend-status/:target', async (req, res) => {
     }
 })
 
+//update leaderboard results for a specific user
+app.get('/:user_id/leaderboard', async (req,res) => {
+    const { user_id } = req.params;
+
+    try{
+        //mostly similar from search q, checking from friendships table and ordering high to low
+        //need rank, pfp, name, pts for leaderboard
+        const result = await db.query(
+            `SELECT
+                u.user_id,
+                u.username,
+                u.first_name,
+                u.last_name,
+                up.profile_pic,
+                up.points
+            FROM
+                Users u
+            JOIN
+                UserProfiles up ON u.user_id = up.user_id
+            JOIN
+                Friendships f ON (f.user_id1 = $1 AND f.user_id2 = u.user_id)
+                OR (f.user_id1 = u.user_id AND f.user_id2 = $1)
+            ORDER BY 
+                up.points DESC
+            `,
+            [user_id]
+        );
+
+        //send all info to server
+        res.status(200).json(result.rows);
+    }
+    catch(err){
+        console.log("error fetching info for leaderboard");
+        res.status(500).json({error: "Server erorr" });
+    }
+    //show user_id info
+    //get all from friends and display pfp rank name pts
+})
 
 
 
