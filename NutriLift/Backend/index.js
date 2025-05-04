@@ -653,29 +653,52 @@ app.get('/:user_id/friend-status/:target', async (req, res) => {
 })
 
 //update leaderboard results for a specific user
+//https://www.w3schools.com/sql/default.asp for combining results / calling the ORDER BY on full list
+//https://www.w3schools.com/sql/sql_union.asp for UNION
 app.get('/:user_id/leaderboard', async (req,res) => {
     const { user_id } = req.params;
 
     try{
         //mostly similar from search q, checking from friendships table and ordering high to low
         //need rank, pfp, name, pts for leaderboard
+        //included the user_id as a UNION so rank is ordered from server
         const result = await db.query(
-            `SELECT
-                u.user_id,
-                u.username,
-                u.first_name,
-                u.last_name,
-                up.profile_pic,
-                up.points
-            FROM
-                Users u
-            JOIN
-                UserProfiles up ON u.user_id = up.user_id
-            JOIN
-                Friendships f ON (f.user_id1 = $1 AND f.user_id2 = u.user_id)
-                OR (f.user_id1 = u.user_id AND f.user_id2 = $1)
+            `
+            SELECT * FROM(
+                SELECT 
+                    u.user_id,
+                    u.username,
+                    u.first_name,
+                    u.last_name,
+                    up.profile_pic,
+                    up.points
+                FROM 
+                    Users u
+                JOIN 
+                    UserProfiles up ON u.user_id = up.user_id
+                WHERE 
+                    u.user_id = $1
+
+                UNION 
+
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.first_name,
+                    u.last_name,
+                    up.profile_pic,
+                    up.points
+                FROM
+                    Users u
+                JOIN
+                    UserProfiles up ON u.user_id = up.user_id
+                JOIN
+                    Friendships f ON (f.user_id1 = $1 AND f.user_id2 = u.user_id)
+                    OR (f.user_id1 = u.user_id AND f.user_id2 = $1)
+            ) 
+            AS combined_results
             ORDER BY 
-                up.points DESC
+                points DESC
             `,
             [user_id]
         );
@@ -691,6 +714,7 @@ app.get('/:user_id/leaderboard', async (req,res) => {
     //get all from friends and display pfp rank name pts
 })
 
+//
 
 
 
