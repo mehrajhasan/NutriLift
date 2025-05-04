@@ -8,19 +8,68 @@
 import SwiftUI
 
 struct LeaderBoardView: View {
-//    @State private var friendsData: [UserProfile] = []
-    @State private var friendsData: [UserProfile] =
-    [
-        UserProfile(user_id: 28, username: "Jakeharris", first_name: "Jake", last_name: "Harris", email: nil, profile_pic: nil, points: 52),
-        UserProfile(user_id: 27, username: "Jackblues", first_name: "Justin", last_name: "Bieber", email: nil, profile_pic: nil, points: 25),
-        UserProfile(user_id: 25, username: "fs", first_name: "Harry", last_name: "Potter", email: nil, profile_pic: nil, points: 20),
-        UserProfile(user_id: 2, username: "fs", first_name: "Hermione", last_name: "Granger", email: nil, profile_pic: nil, points: 24),
-        UserProfile(user_id: 23, username: "fs", first_name: "Ronald", last_name: "Weasley", email: nil, profile_pic: nil, points: 23),
-        UserProfile(user_id: 21, username: "fs", first_name: "Santa", last_name: "Claus", email: nil, profile_pic: nil, points: 12),
-        UserProfile(user_id: 221, username: "fs", first_name: "Jack", last_name: "Blues", email: nil, profile_pic: nil, points: 122)
-    ]
+    @State private var friendsData: [UserProfile] = []
+//    @State private var friendsData: [UserProfile] =
+//    [
+//        UserProfile(user_id: 28, username: "Jakeharris", first_name: "Jake", last_name: "Harris", email: nil, profile_pic: nil, points: 52),
+//        UserProfile(user_id: 27, username: "Jackblues", first_name: "Justin", last_name: "Bieber", email: nil, profile_pic: nil, points: 25),
+//        UserProfile(user_id: 25, username: "fs", first_name: "Harry", last_name: "Potter", email: nil, profile_pic: nil, points: 20),
+//        UserProfile(user_id: 2, username: "fs", first_name: "Hermione", last_name: "Granger", email: nil, profile_pic: nil, points: 24),
+//        UserProfile(user_id: 23, username: "fs", first_name: "Ronald", last_name: "Weasley", email: nil, profile_pic: nil, points: 23),
+//        UserProfile(user_id: 21, username: "fs", first_name: "Santa", last_name: "Claus", email: nil, profile_pic: nil, points: 12),
+//        UserProfile(user_id: 221, username: "fs", first_name: "Jack", last_name: "Blues", email: nil, profile_pic: nil, points: 122)
+//    ]
     let rank: Int = 1
-
+    
+    func getLeaderboard(userId: Int){
+        guard let url = URL(string: "http://localhost:3000/\(userId)/leaderboard") else{
+            print("Invalid URL")
+            return
+        }
+        
+        //setting up for a GET request
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        //authentication stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        //handling data
+        URLSession.shared.dataTask(with: request){ data, response, error in
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else{
+                print("No data")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            guard httpResponse.statusCode == 200 else {
+                print("Server error: \(httpResponse.statusCode)")
+                return
+            }
+            
+            //decode data from friendsdata
+            do{
+                let decoder = JSONDecoder()
+                let results = try decoder.decode([UserProfile].self, from: data)
+                self.friendsData = results
+            }
+            catch{
+                print("Failed to decode: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
 
     var body: some View {
         NavigationStack{
@@ -72,7 +121,17 @@ struct LeaderBoardView: View {
                 .navigationTitle("Leaderboard")
             }
         }
+        .onAppear {
+            if let userId = UserDefaults.standard.value(forKey: "userId") as? Int {
+                print("Retrieved userID: \(userId)")
+                getLeaderboard(userId: userId)
+            }
+            else{
+                print("error fetching userid")
+            }
+        }
     }
+    
     
 
 }
