@@ -71,6 +71,16 @@ struct LeaderBoardView: View {
             }
         }.resume()
     }
+    
+    //https://developer.apple.com/documentation/swift/array/firstindex(of:) for header
+    func calcuateRank(userId: Int, from friendsData: [UserProfile]) -> Int {
+        //finding the index where the userId falls within list +1 cus its index
+        if let index = friendsData.firstIndex(where: { $0.user_id == userId }){
+            return index + 1
+        }
+        
+        return 0
+    }
 
     var body: some View {
         NavigationStack{
@@ -82,9 +92,9 @@ struct LeaderBoardView: View {
                             .font(.subheadline)
                             .foregroundColor(Color.white)
                             .bold()
-                        
+                        let yourRank = calcuateRank(userId: userId, from: friendsData)
                         HStack(){
-                            Text("1")
+                            Text("\(yourRank)")
                                 .frame(width: 30)
                             Circle()
                                 .fill(Color.black)
@@ -119,13 +129,14 @@ struct LeaderBoardView: View {
                 //need this so we dont repeat userId
                 let userId = UserDefaults.standard.value(forKey: "userId") as? Int
                 let filteredData = friendsData.filter { $0.user_id != userId }
-                
                 VStack{
                     //changed to use index to be able to rank within here
                     ForEach(filteredData.indices, id: \.self){ index in
                         let user = filteredData[index]
+                        
+                        let userRank = index + 2
                         HStack(){
-                            Text("\(index+1)")
+                            Text("\(userRank)")
                                 .frame(width: 30)
                             Circle()
                                 .fill(Color.black)
