@@ -9,6 +9,7 @@ import SwiftUI
 
 struct LeaderBoardView: View {
     @State private var friendsData: [UserProfile] = []
+    @State private var currentUser: UserProfile? = nil
 //    @State private var friendsData: [UserProfile] =
 //    [
 //        UserProfile(user_id: 28, username: "Jakeharris", first_name: "Jake", last_name: "Harris", email: nil, profile_pic: nil, points: 52),
@@ -74,10 +75,55 @@ struct LeaderBoardView: View {
     var body: some View {
         NavigationStack{
             ScrollView{
+                //put your own card on top of leaderboard so yk where u stand
+                if let userId = UserDefaults.standard.value(forKey: "userId") as? Int, let user = friendsData.first(where: { $0.user_id == userId}) {
+                    VStack(alignment: .leading){
+                        Text("Your rank")
+                            .font(.subheadline)
+                            .foregroundColor(Color.white)
+                            .bold()
+                        
+                        HStack(){
+                            Text("1")
+                                .frame(width: 30)
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 50, height: 50)
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .padding(25)
+                                        .foregroundColor(Color(red: 0.4, green: 0.3, blue: 0.6))
+                                )
+                            
+                            Text("\(user.first_name) \(user.last_name)")
+                                .bold()
+                                .padding(.leading)
+                            Spacer()
+                            Text("\(user.points)")
+                                .padding(.leading)
+                            
+                            Image(systemName:"arrow.up.right.circle")
+                                .padding(.trailing)
+                        }
+                    }
+                    .padding()
+                    .background(Color(red: 0.4, green: 0.698, blue: 0.941))
+                    .cornerRadius(15)
+                    .foregroundColor(.white)
+                    .padding(.horizontal,5)
+                    .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 5)
+                }
+                
+                //need this so we dont repeat userId
+                let userId = UserDefaults.standard.value(forKey: "userId") as? Int
+                let filteredData = friendsData.filter { $0.user_id != userId }
+                
                 VStack{
                     //changed to use index to be able to rank within here
-                    ForEach(friendsData.indices, id: \.self){ index in
-                        let user = friendsData[index]
+                    ForEach(filteredData.indices, id: \.self){ index in
+                        let user = filteredData[index]
                         HStack(){
                             Text("\(index+1)")
                                 .frame(width: 30)
