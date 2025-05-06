@@ -92,7 +92,8 @@ struct SaveRoutineView: View {
             return
         }
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        /*
+        URLSession.shared.dataTask(with: request) { data, response, error throws in
             if let data = data {
                 do {
                     let savedRoutine = try JSONDecoder().decode(Routine.self, from: data)
@@ -103,10 +104,11 @@ struct SaveRoutineView: View {
                             presentationMode.wrappedValue.dismiss()
                         }
                     }
-                } //catch { print("Decoding error:", error)}
+                } //catch {print("Decoding error:", error)}
             }
         }.resume()
         
-        
+        */
     }
+        
 }
