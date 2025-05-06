@@ -4,29 +4,38 @@
 //
 //  Created by Jairo Iqbal Gil on 3/20/25.
 //
+
+
 import SwiftUI
 import Foundation
 
-struct ExerciseSelectionView: View {
-    @State private var searchText: String = ""
-    @State private var exercises: [Exercise] = []
-    @Binding var selectedExercises: [ExerciseEntry]
-    @Environment(\.presentationMode) var presentationMode
 
+// view for picking exercises from a list
+struct ExerciseSelectionView: View {
+    @State private var searchText: String = "" // holds what user types in the search bar
+    @State private var exercises: [Exercise] = [] // stores all available exercises
+    @Binding var selectedExercises: [ExerciseEntry]// tracks exercises the user has picked
+    @Environment(\.presentationMode) var presentationMode
+    
+    
+    // filters exercises based on search input
     var filteredExercises: [Exercise] {
         exercises.filter { exercise in
             searchText.isEmpty || exercise.name.lowercased().contains(searchText.lowercased())
         }
     }
-
+    
     var body: some View {
         VStack {
+            // search bar
             TextField("Search Exercises", text: $searchText)
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
                 .padding(.horizontal)
-
+            
+            
+            // shows list of filtered exercises
             List(filteredExercises, id: \.id) { exercise in
                 HStack {
                     Text(exercise.name)
@@ -39,9 +48,11 @@ struct ExerciseSelectionView: View {
                     }
                 }
             }
-
+            
             Spacer()
-
+            
+            
+            // button to close the view when done
             Button(action: {
                 presentationMode.wrappedValue.dismiss()
             }) {
@@ -56,10 +67,12 @@ struct ExerciseSelectionView: View {
             .padding(.horizontal)
         }
         .onAppear {
-            fetchExercises()
+            fetchExercises() // load exercises from the backend when view shows up
         }
     }
-
+    
+    
+    // handles selecting or unselecting an exercise
     func toggleExerciseSelection(for exercise: Exercise) {
         if let index = selectedExercises.firstIndex(where: { $0.name == exercise.name }) {
             selectedExercises.remove(at: index)
@@ -72,21 +85,20 @@ struct ExerciseSelectionView: View {
             selectedExercises.append(newEntry)
         }
     }
-
+    
+    
+    // pulls exercise data from the backend
     func fetchExercises() {
         guard let url = URL(string: "http://localhost:3000/api/exercises") else { return }
 
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data {
-                do {
-                    let decodedData = try JSONDecoder().decode([Exercise].self, from: data)
-                    DispatchQueue.main.async {
-                        self.exercises = decodedData
-                    }
-                } catch {
-                    print("Error decoding JSON:", error)
+                let decodedData = try! JSONDecoder().decode([Exercise].self, from: data)
+                DispatchQueue.main.async {
+                    self.exercises = decodedData
                 }
             }
         }.resume()
     }
+
 }
