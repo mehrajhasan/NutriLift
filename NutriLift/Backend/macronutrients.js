@@ -75,4 +75,56 @@ router.get("/usda/search/:query", async (req, res) => {
     }
 });
 
+//ADD macro_goals to database for logged in user
+router.post("/macro_goals", async (req, res) => {
+    try {
+        const { user_id, protein_goal, carbs_goal, fats_goal, calories_goal } = req.body;
+        
+        const existingGoal = await pool.query(
+            "SELECT * FROM macro_goals WHERE user_id = $1", [user_id]   //check to make sure if user already has macro goal set
+        );
+        
+        let result;
+        if (existingGoal.rows.length > 0) {
+            result = await pool.query(
+                "UPDATE macro_goals SET protein_goal = $1, carbs_goal = $2, fats_goal = $3, calories_goal = $4 WHERE user_id = $5 RETURNING *",
+                [protein_goal, carbs_goal, fats_goal, calories_goal, user_id]   //update the existing macros goal
+            );
+        }
+        else {
+            result = await pool.query(
+                "INSERT INTO macro_goals (user_id, protein_goal, carbs_goal, fats_goal, calories_goal) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+                [user_id, protein_goal, carbs_goal, fats_goal, calories_goal]   //adding a new macro goal
+            );
+        }
+        
+        res.json(result.rows[0]);
+    }
+    catch (err) {
+        console.error("Error saving macro-goal", err.message);
+        res.status(500).send("Server Error");
+    }
+});
+
+//GET route to get the macro_goals for logged in user
+router.get("/macro_goals/:user_id", async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const result = await pool.query(
+            "SELECT * FROM macro_goals WHERE user_id = $1",
+            [user_id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: "No macro-goals found for user"});    //if theres no existing macro goal
+        }
+        
+        res.json(result.rows[0]);
+    }
+    catch (err) {
+        console.error("Error fetching macro-goals:", err.message);
+        res.status(500).send("Server Error");
+    }
+});
+
 module.exports = router;
