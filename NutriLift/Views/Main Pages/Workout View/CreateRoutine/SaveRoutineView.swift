@@ -92,23 +92,35 @@ struct SaveRoutineView: View {
             return
         }
         
-        /*
-        URLSession.shared.dataTask(with: request) { data, response, error throws in
-            if let data = data {
-                do {
-                    let savedRoutine = try JSONDecoder().decode(Routine.self, from: data)
-                    DispatchQueue.main.async {
-                        print("Routine saved successfully:", savedRoutine)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("network error:", error)
+                return
+            }
+
+            guard let data = data else {
+                print("no data returned from server")
+                return
+            }
+
+            do {
+                let savedRoutine = try JSONDecoder().decode(Routine.self, from: data)
+                DispatchQueue.main.async {
+                    print("routine saved successfully:", savedRoutine)
+                    presentationMode.wrappedValue.dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         presentationMode.wrappedValue.dismiss()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            presentationMode.wrappedValue.dismiss()
-                        }
                     }
-                } //catch {print("Decoding error:", error)}
+                }
+            } catch {
+                print("decoding error:", error)
+                print("raw response:", String(data: data, encoding: .utf8) ?? "n/a")
             }
         }.resume()
+
         
-        */
+        
     }
         
 }

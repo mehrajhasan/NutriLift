@@ -86,19 +86,18 @@ struct ExerciseSelectionView: View {
         }
     }
     
-    
+
     // pulls exercise data from the backend
     func fetchExercises() {
         guard let url = URL(string: "http://localhost:3000/api/exercises") else { return }
-
+        
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data {
-                let decodedData = try! JSONDecoder().decode([Exercise].self, from: data)
+                let decodedData = try! JSONDecoder().decode([Exercise].self, from: data) // turn json into exercise objects
                 DispatchQueue.main.async {
-                    self.exercises = decodedData
+                    self.exercises = decodedData // update the list on the screen
                 }
             }
         }.resume()
     }
-
 }

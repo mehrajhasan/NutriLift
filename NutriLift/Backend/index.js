@@ -320,7 +320,144 @@ app.put('/user/:user_id/update', authenticateToken, async (req,res) => {
 });
 
 
+/*
+ 
+ WORKOUT
+ 
+ 
+ 
+ 
+ */
+// Fetch all exercises
+//
+app.get('/api/exercises', async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM exercises");
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error while fetching exercises" });
+    }
+});
+/*
+ How to use Json stringify
+ https://www.w3schools.com/js/js_json_stringify.asp
+ */
+app.get('/api/routines', authenticateToken, async (req, res) => {
+    
+    /*
+     OLD GET ROUTE
+     
+     app.get('/api/routines/:user_id', async (req, res) => {
+     const { user_id } = req.params;
+     console.log("->Fetching routines for user_id:", user_id);
+     
+     */
+    
+    
+    // Use the user_id from the token instead of a URL parameter. (Fixed this)
+    const user_id = req.user.user_id;
+    console.log("->Fetching routines for user_id from token:", user_id);
+    
+    try {
+        const result = await db.query(
+                                      "SELECT id, title, exercises, user_id FROM routines WHERE user_id = $1",
+                                      [user_id]
+                                      );
+        
+        const routines = result.rows.map(row => ({
+            id: row.id,
+            title: row.title,
+            user_id: row.user_id,  // This is still returned for reference DONT DELTEE
+            exercises: typeof row.exercises === 'string' ? JSON.parse(row.exercises) : row.exercises
+        }));
+        
+        console.log("->Parsed routines:", routines);
+        res.json(routines);
+    } catch (err) {
+        console.error("Error fetching routines:", err);
+        res.status(500).json({ error: "Failed to fetch routines" });
+    }
+});
 
+
+app.post('/api/routines', async (req, res) => {
+    console.log("Incoming request:", req.body);
+    
+    try {
+        const { title, exercises, user_id } = req.body; // Include user_id
+        
+        if (!title || !exercises || !user_id) {
+            return res.status(400).json({ error: "Title, exercises, and user_id are required" });
+        }
+        
+        // Map over exercises to add an id to each exercise if it doesn't already have one
+        const exercisesWithIds = exercises.map(ex => ({
+            id: ex.id || uuidv4(),
+            name: ex.name,
+            sets: ex.sets
+        }));
+        
+        // Use exercisesWithIds when saving the routine
+        const result = await db.query(
+                                      "INSERT INTO routines (title, exercises, user_id) VALUES ($1, $2, $3) RETURNING *",
+                                      [title, JSON.stringify(exercisesWithIds), user_id]
+                                      );
+        
+        console.log("Routine saved:", JSON.stringify(result.rows[0], null, 2));
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Error saving routine:", err);
+        res.status(500).json({ error: "Error saving routine" });
+    }
+});
+
+// delete route
+app.delete('/api/routines/:id', authenticateToken, async (req, res) => {
+  const routineId = req.params.id;
+  const userId = req.user.user_id;
+
+  const result = await db.query(
+    'DELETE FROM routines WHERE id = $1 AND user_id = $2 RETURNING *',
+    [routineId, userId]
+  );
+
+  res.json({ message: 'Routine deleted successfully' });
+});
+
+
+// update/edit route
+app.put('/api/routines/:id', authenticateToken, async (req, res) => {
+    const routineId = req.params.id;
+    const userId = req.user.user_id;
+    const { title, exercises } = req.body;
+
+    const updated = await db.query(
+        `UPDATE routines
+         SET title = $1, exercises = $2
+         WHERE id = $3 AND user_id = $4
+         RETURNING *`,
+        [title, JSON.stringify(exercises), routineId, userId]
+    );
+
+    res.status(200).json({ message: "Routine updated", routine: updated.rows[0] });
+});
+
+//Workout Finish Button Int
+
+app.post('/api/userprofiles/:id/increment-points', async (req, res) => {
+    const userId = req.params.id;
+    
+    console.log(`Beep Boop Beep Boop .... Received request for user_id ${userId}`);
+
+    
+    const result = await db.query(
+                                  'UPDATE userprofiles SET points = points + 20 WHERE user_id = $1 RETURNING points',
+                                  [userId]
+                                  );
+    
+    res.json({ points: result.rows[0].points });
+});
 
 /*
  
@@ -623,6 +760,7 @@ app.get('/:user_id/leaderboard', async (req,res) => {
 })
 
 //
+
 
 
 
