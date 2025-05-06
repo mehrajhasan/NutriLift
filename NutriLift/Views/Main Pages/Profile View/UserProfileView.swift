@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+struct FriendStatus: Codable {
+    let isFriend: Bool
+    let isPending: Bool
+}
+
 struct UserProfileView: View {
     let user: UserProfile
 
@@ -21,6 +26,8 @@ struct UserProfileView: View {
     @State private var last_name: String = "Doe"
     @State private var points: Int = 0
     @State private var friendRequest: Bool = false
+    @State private var isFriend: Bool = false
+    @State private var isPending: Bool = true
     
     var caloriesProgress: Double {
         guard caloriesGoal > 0 else { return 0.0 }
@@ -146,6 +153,60 @@ struct UserProfileView: View {
         }.resume()
     }
     
+    //get friends status (needed to update UI accordingly)
+    func fetchFriendStatus(){
+        //from logged in user
+        let userId = UserDefaults.standard.integer(forKey: "userId")
+        
+        //endpoint and user.user_id since it depedns on prof
+        guard let url = URL(string: "http://localhost:3000/\(userId)/friend-status/\(user.user_id)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        //setting up GET req headers
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        //auth stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            //if good, decode the JSON res holding the isFriend/isPending data and udpate accordingly
+            if httpResponse.statusCode == 200 {
+                if let data = data {
+                    do {
+                        let decoder = JSONDecoder()
+                        let result = try decoder.decode(FriendStatus.self, from: data)
+                        
+                        DispatchQueue.main.async{
+                            self.isFriend = result.isFriend
+                            self.isPending = result.isFriend
+                        }
+                    } catch {
+                        print("Failed to decode server response: \(error.localizedDescription)")
+                    }
+                }
+            } else {
+                print("Server returned status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
+        
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack{
@@ -186,27 +247,62 @@ struct UserProfileView: View {
                 //dynamic
                 //name - edit profile - points
                 VStack{
-                    Text("\(user.first_name) \(user.last_name)")
-                        .font(.title)
-                        .bold()
-                    
-                    Button{
-                        //send a friend req wehn clikced
-                        sendFriendReq()
-                    } label:{
-                        //toggles based on bool value
-                        Text(friendRequest ? "Pending" : "Friend Request")
-                            .foregroundColor(.white)
-                            .font(.callout)
-                            .frame(height:30)
-                            .padding(.horizontal, 35)
-                            .background(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .fill(friendRequest ? Color(hue: 0.11, saturation: 0.93, brightness: 0.95) : Color(hue: 0.55033,saturation: 0.9608,brightness: 1))
-                                
-                            )
+                    if(isFriend){
+                        HStack{
+                            Text("\(user.first_name) \(user.last_name)")
+                                .font(.title)
+                                .bold()
+                
+                            //need to add unfollow functionality as well
+                            Button{
+                            } label:{
+                                Image(systemName: "person.fill.checkmark")
+                            }
+                        }
+                        
                     }
-                    .padding(.top, -12.5)
+                    else{
+                        Text("\(user.first_name) \(user.last_name)")
+                            .font(.title)
+                            .bold()
+                    }
+                    if(!isFriend && !isPending){
+                        Button{
+                            //send a friend req wehn clikced
+                            sendFriendReq()
+                        } label:{
+                            //toggles based on bool value
+                            Text(friendRequest ? "Pending" : "Friend Request")
+                                .foregroundColor(.white)
+                                .font(.callout)
+                                .frame(height:30)
+                                .padding(.horizontal, 35)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(friendRequest ? Color(hue: 0.11, saturation: 0.93, brightness: 0.95) : Color(hue: 0.55033,saturation: 0.9608,brightness: 1))
+                                    
+                                )
+                        }
+                        .padding(.top, -12.5)
+                    }
+                    else if(isPending){
+                        Button{
+                            //add undo btn
+                        } label:{
+                            //toggles based on bool value
+                            Text("Pending")
+                                .foregroundColor(.white)
+                                .font(.callout)
+                                .frame(height:30)
+                                .padding(.horizontal, 35)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color(hue: 0.11, saturation: 0.93, brightness: 0.95))
+                                    
+                                )
+                        }
+                        .padding(.top, -12.5)
+                    }
                     //make dynamic for level and leaderboard score
                     HStack{
                         Text("0")
@@ -293,12 +389,14 @@ struct UserProfileView: View {
                 )
                 .padding(.horizontal)
                 .padding(.top, 150)
-                .blur(radius: 5)
+                //update, no blur if friends
+                .blur(radius: isFriend ? 0 : 5)
             }
             .onAppear {
                 if let userId = UserDefaults.standard.value(forKey: "userId") as? Int {
                     print("Retrieved userID: \(userId)")
                     fetchUserProfile(userId: userId)
+                    fetchFriendStatus() //update all vars accordingly when it loads aka isFriend and isPending
                 }
                 else{
                     print("error fetching userid")

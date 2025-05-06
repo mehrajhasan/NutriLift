@@ -479,7 +479,150 @@ app.get('/:user_id/friend-requests', authenticateToken, async (req, res) => {
     }
 })
 
+//accepting a friend request and forming a friendship
+app.post('/:user_id/friend-request/accept', authenticateToken, async (req, res) => {
+    const { sender_id, receiver_id } = req.body;
+    console.log("attempting to accept a friend request")
+    try{
+        //insert the friendship into the friendship table
+        await db.query(
+            `INSERT INTO friendships (user_id1, user_id2) VALUES ($1,$2)`,
+            [sender_id,receiver_id]
+        );
 
+        //delete the record from the friend requests table
+        await db.query(
+            `DELETE FROM friend_requests
+            WHERE sender_id = $1 AND receiver_id = $2
+            `,
+            [sender_id, receiver_id]
+        )
+        
+        console.log("User", receiver_id, "accepted friend request from", sender_id);
+    }
+    catch(err){
+        console.log("error accepting a friend request");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
+//denies an incoming friend request 
+app.post('/:user_id/friend-request/deny', authenticateToken, async (req, res) => {
+    //similar to accept logic, just deleting a rec
+    const { sender_id, receiver_id } = req.body;
+    console.log("attepting to reject a friend request")
+
+    try{
+        //just need to delete from friend requests table
+        await db.query(
+            `DELETE FROM friend_requests
+            WHERE sender_id = $1 AND receiver_id = $2
+            `,
+            [sender_id, receiver_id]
+        )
+
+        console.log("User", receiver_id, "rejected friend request from", sender_id);
+    }
+    catch(err){
+        console.log("error rejecting a friend request");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
+//get the status of user and target to display userprofile accordingly
+app.get('/:user_id/friend-status/:target', async (req, res) => {
+    const { user_id, target } = req.params;
+    console.log("checking status between", user_id, "and", target);
+
+    try{
+        //check if they are friends
+        const friendResult = await db.query(
+            `SELECT * FROM friendships 
+            WHERE (user_id1 = $1 AND user_id2 = $2) OR (user_id2 = $1 AND user_id1 = $2)`,
+            [user_id, target]
+        );
+
+        const isFriend = friendResult.rows.length > 0;
+
+        const pendingResult = await db.query(
+            `SELECT * FROM friend_requests
+            WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)`,
+            [user_id, target]
+        );
+
+        const isPending = pendingResult.rows.length > 0;
+
+        res.status(200).json({isFriend,isPending});
+    }
+    catch(err){
+        console.log("error checking status of relation");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
+//update leaderboard results for a specific user
+//https://www.w3schools.com/sql/default.asp for combining results / calling the ORDER BY on full list
+//https://www.w3schools.com/sql/sql_union.asp for UNION
+app.get('/:user_id/leaderboard', async (req,res) => {
+    const { user_id } = req.params;
+
+    try{
+        //mostly similar from search q, checking from friendships table and ordering high to low
+        //need rank, pfp, name, pts for leaderboard
+        //included the user_id as a UNION so rank is ordered from server
+        const result = await db.query(
+            `
+            SELECT * FROM(
+                SELECT 
+                    u.user_id,
+                    u.username,
+                    u.first_name,
+                    u.last_name,
+                    up.profile_pic,
+                    up.points
+                FROM 
+                    Users u
+                JOIN 
+                    UserProfiles up ON u.user_id = up.user_id
+                WHERE 
+                    u.user_id = $1
+
+                UNION 
+
+                SELECT
+                    u.user_id,
+                    u.username,
+                    u.first_name,
+                    u.last_name,
+                    up.profile_pic,
+                    up.points
+                FROM
+                    Users u
+                JOIN
+                    UserProfiles up ON u.user_id = up.user_id
+                JOIN
+                    Friendships f ON (f.user_id1 = $1 AND f.user_id2 = u.user_id)
+                    OR (f.user_id1 = u.user_id AND f.user_id2 = $1)
+            ) 
+            AS combined_results
+            ORDER BY 
+                points DESC
+            `,
+            [user_id]
+        );
+
+        //send all info to server
+        res.status(200).json(result.rows);
+    }
+    catch(err){
+        console.log("error fetching info for leaderboard");
+        res.status(500).json({error: "Server erorr" });
+    }
+    //show user_id info
+    //get all from friends and display pfp rank name pts
+})
+
+//
 
 
 

@@ -78,6 +78,17 @@ struct MacrosView: View {
                 }
                 .padding()
                 
+                //View/Change Macro Goals buttion
+                NavigationLink(destination: SetMacroGoalsView()) {
+                    Text("View/Change Macro Goals")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal)
+                
                 ScrollView {
                     mealSections
                         .padding()
