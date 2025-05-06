@@ -12,17 +12,21 @@ import Foundation
  UUID Link: https://developer.apple.com/documentation/foundation/uuid
  */
 
-struct WorkoutRoutineView: View {
-    @State private var selectedExercises: [ExerciseEntry] = []
 
+// view that shows a full workout routine with selected exercises
+struct WorkoutRoutineView: View {
+    @State private var selectedExercises: [ExerciseEntry] = [] // keeps track of all exercises picked
+    
+    
     var body: some View {
         VStack {
             ScrollView {
+                // loops through selected exercises and shows each one using a card
                 ForEach($selectedExercises) { $exercise in
                     ExerciseCardView(exercise: $exercise)
                 }
             }
-
+            // button that would let user add more exercises (navigation not hooked up yet)
             Button(action: {
                 // Navigate to add exercises screen
             }) {
@@ -38,33 +42,35 @@ struct WorkoutRoutineView: View {
     }
 }
 
+
+// view that shows one exercise and its sets in a card layout
 struct ExerciseCardView: View {
     @Binding var exercise: ExerciseEntry
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             Text(exercise.name)
                 .font(.headline)
                 .foregroundColor(.blue)
                 .padding(.horizontal)
-                
-
+            
+            
             // Header Row
             HStack {
                 Text("Set")
                     .frame(width: 40, alignment: .center)
-
+                
                 Spacer()
-
+                
                 Text("Prev.")
                     .frame(width: 75, alignment: .center)
-
+                
                 Text("lbs")
                     .frame(width: 75, alignment: .center)
-
+                
                 Text("Reps")
                     .frame(width: 75, alignment: .center)
-
+                
                 Spacer()
                 
                 Text("") // for delete icon alignment
@@ -73,8 +79,9 @@ struct ExerciseCardView: View {
             .font(.caption)
             .foregroundColor(.gray)
             .padding(.horizontal)
-
+            
             // Input Rows
+            // loop that creates one row per set for this exercise
             ForEach(Array($exercise.sets.enumerated()), id: \.element.id) { index, $set in
                 HStack {
                     Text("\(index + 1)")
@@ -82,27 +89,28 @@ struct ExerciseCardView: View {
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(5)
                         .multilineTextAlignment(.center)
-
+                    
                     Spacer()
-
+                    
+                    // placeholder for previous data (currently static) incomplete
                     Text("-")
                         .frame(width: 75)
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(5)
                         .multilineTextAlignment(.center)
-
+                    
                     TextField("", text: $set.weight)
                         .frame(width: 75)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .multilineTextAlignment(.center)
-
+                    
                     TextField("", text: $set.reps)
                         .frame(width: 75)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .multilineTextAlignment(.center)
-
+                    
                     Spacer()
-
+                    
                     Button(action: {
                         exercise.sets.remove(at: index)
                     }) {
@@ -112,11 +120,11 @@ struct ExerciseCardView: View {
                 }
                 .padding(.horizontal)
             }
-
+            
             // Add Set Button
             Button(action: {
                 exercise.sets.append(SetEntry(id: UUID().uuidString, weight: "", reps: "")
-)
+                )
             }) {
                 Text("+ Add Set")
                     .frame(maxWidth: .infinity)
@@ -133,7 +141,7 @@ struct ExerciseCardView: View {
         .frame(maxWidth: .infinity)
         
     }
-
+    
 }
 #Preview {
     ExerciseCardView(exercise: .constant(
