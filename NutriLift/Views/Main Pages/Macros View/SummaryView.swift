@@ -4,6 +4,75 @@ import Charts
 struct SummaryView: View {
     var selectedDate: Date
     var savedMeals: [LoggedMeal]
+    @State private var userMacroGoals: MacroGoals? = nil    //To store logged in users macro goals fetched from db
+    
+    struct MacroGoals: Codable {    //matches JSON structure from backend for macro_goals. use to decode users macro goals from backend JSON
+        let proteinGoal: Double
+        let carbsGoal: Double
+        let fatsGoal: Double
+        let caloriesGoal: Double
+        
+        enum CodingKeys: String, CodingKey {    //key mapping snacke_case JSON keys
+            case proteinGoal = "protein_goal"
+            case carbsGoal = "carbs_goal"
+            case fatsGoal = "fats_goal"
+            case caloriesGoal = "calories_goal"
+        }
+        init(from decoder: Decoder) throws {    //needed to decode since backend was sending numbers as strings
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            proteinGoal = Double(try container.decode(String.self, forKey: .proteinGoal)) ?? 0
+            carbsGoal = Double(try container.decode(String.self, forKey: .carbsGoal)) ?? 0
+            fatsGoal = Double(try container.decode(String.self, forKey: .fatsGoal)) ?? 0
+            caloriesGoal = Double(try container.decode(String.self, forKey: .caloriesGoal)) ?? 0
+            
+        }
+    }
+    
+    func calculateCalories(protein: Double, carbs: Double, fats: Double) -> Double {
+        return (protein * 4) + (carbs * 4) + (fats * 9)
+    }
+    
+    func fetchMacroGoals() {    //fetch logged in users macro goals from backend
+        guard let userID = UserDefaults.standard.value(forKey: "userId") as? Int else { return }    //getting user ID from the UserDefaults which is stored using @Appstorage during login)
+        guard let url = URL(string: "http://localhost:3000/api/macro_goals/\(userID)") else { return }  //creating URL using userID
+        URLSession.shared.dataTask(with: url) {data, _, _ in
+            if let data = data {    //making GET request
+                let decoder = JSONDecoder()
+                //decoder.keyDecodingStrategy = .convertFromSnakeCase //converting snake_case JSON to camelCase swift
+                
+                if let decoded = try? decoder.decode(MacroGoals.self, from: data) {
+                    DispatchQueue.main.sync {
+                        print("Fetched macro goals: \(decoded)")
+                        self.userMacroGoals = decoded
+                    }
+                } else {
+                    print("failed to decode macro goals.")
+                    if let responseString = String(data: data, encoding: .utf8) {
+                        print("raw JSON response:\n\(responseString)")
+                    }
+                }
+            }
+        }.resume()
+    }
+    
+    struct MacroGoalRow: View {
+        let label: String   //"Protein"
+        let goal: Double
+        let consumed: Double
+        
+        var body: some View {
+            HStack {
+                Text(label)
+                    .frame(width: 100, alignment: .leading)
+                Spacer()
+                
+                Text("\(goal, specifier: "%.0f")g") //show the goal value
+                    .frame(width: 80, alignment: .trailing)
+                Text("\(max(goal - consumed, 0), specifier: "%.0f")g")
+                    .frame(width: 80, alignment: .trailing)
+            }
+        }
+    }
 
     //Filters meals to only show entries for the selected date
     var mealsForSelectedDate: [LoggedMeal] {
@@ -33,7 +102,7 @@ struct SummaryView: View {
         return (protein, carbs, fats)
     }
     
-    var macroPercentages: [(label: String, value: Double, color: Color)] {
+    var macroPercentages: [(label: String, value: Double, color: Color)] {  //calculate percentage of each macro based on total
         let total = dailyTotals.protein + dailyTotals.carbs + dailyTotals.fats
         guard total > 0 else { return [] }
 
@@ -96,17 +165,72 @@ struct SummaryView: View {
                         Text("Fats")
                             .font(.subheadline)
                             .frame(width: 60, alignment: .trailing)
+                        
+                        Text("Calories")
+                            .font(.subheadline)
+                            .frame(width: 60, alignment: .trailing)
                     }
 
-                    SummaryRow(label: "Breakfast", totals: totals(for: "Breakfast"))
-                    SummaryRow(label: "Lunch", totals: totals(for: "Lunch"))
-                    SummaryRow(label: "Dinner", totals: totals(for: "Dinner"))
-
+                    SummaryRow(
+                        label: "Breakfast",
+                        totals: totals(for: "Breakfast"),
+                        calories: calculateCalories(
+                            protein: totals(for: "Breakfast").protein,
+                            carbs: totals(for: "Breakfast").carbs,
+                            fats: totals(for: "Breakfast").fats
+                        )
+                    )
+                    SummaryRow(
+                        label: "Lunch",
+                        totals: totals(for: "Lunch"),
+                        calories: calculateCalories(
+                            protein: totals(for: "Lunch").protein,
+                            carbs: totals(for: "Lunch").carbs,
+                            fats: totals(for: "Lunch").fats
+                        )
+                    )
+                    SummaryRow(
+                        label: "Dinner",
+                        totals: totals(for: "Dinner"),
+                        calories: calculateCalories(
+                            protein: totals(for: "Dinner").protein,
+                            carbs: totals(for: "Dinner").carbs,
+                            fats: totals(for: "Dinner").fats
+                        )
+                    )
                     Divider()
 
-                    SummaryRow(label: "Total", totals: dailyTotals)
+                    SummaryRow(
+                        label: "Total",
+                        totals: dailyTotals,
+                        calories: calculateCalories(protein: dailyTotals.protein, carbs: dailyTotals.carbs, fats: dailyTotals.fats)
+                    )
+                    
+                    
+                    if let goals = userMacroGoals { //if macro goals exist, show users remaining vs their goal for each nutrient
+                        Divider()
+                        
+                        SummaryRow( //Daily Goal row
+                            label: "Daily Goal",
+                            totals: (goals.proteinGoal, goals.carbsGoal, goals.fatsGoal),
+                            calories: goals.caloriesGoal
+                        )
+                        
+                        SummaryRow( //Remaining row
+                            label: "Remaining",
+                            totals: (
+                                max(goals.proteinGoal - dailyTotals.protein, 0),
+                                max(goals.carbsGoal - dailyTotals.carbs, 0),
+                                max(goals.fatsGoal - dailyTotals.fats, 0)
+                            ),
+                            calories: max(goals.caloriesGoal - calculateCalories(protein: dailyTotals.protein, carbs: dailyTotals.carbs, fats: dailyTotals.fats), 0)
+                        )
+                    }
                 }
                 .padding(.horizontal)
+                .onAppear {
+                    fetchMacroGoals()   //should auto load users macro goals from DB
+                }
             }
         }
     }
@@ -115,6 +239,13 @@ struct SummaryView: View {
     struct SummaryRow: View {
         let label: String
         let totals: (protein: Double, carbs: Double, fats: Double)
+        let calories: Double? //for calorie column
+        
+        init(label: String, totals: (protein: Double, carbs: Double, fats: Double), calories: Double? = nil) {
+            self.label = label
+            self.totals = totals
+            self.calories = calories
+        }
 
         var body: some View {
             HStack {
@@ -131,6 +262,11 @@ struct SummaryView: View {
 
                 Text("\(totals.fats, specifier: "%.1f")g")
                     .frame(width: 60, alignment: .trailing)
+                
+                if let calories = calories {
+                    Text("\(calories, specifier: "%.0f")")
+                        .frame(width: 60, alignment: .trailing)
+                }
             }
         }
     }
