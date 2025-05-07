@@ -116,9 +116,60 @@ struct FriendRequestView: View {
         }.resume()
     }
     
-    //func for rejecting  a friend req
-    func declineRequest(){
-        print("testing")
+    //func for rejecting  a friend req (pretty much same as accepting)
+    func declineRequest(userId: Int, sender_id: Int){
+        guard let url = URL(string: "http://localhost:3000/\(userId)/friend-request/deny") else {
+            print("Invlaid URL")
+            return
+        }
+        
+        
+        let body = [
+            "sender_id": sender_id,
+            "receiver_id": userId
+        ]
+        
+        //testing if right stuff
+//        print(sender_id)
+//        print(userId)
+        
+        //decode, if we dont server gets undefined
+        let bodyData = try? JSONSerialization.data(
+            withJSONObject: body,
+            options: []
+        )
+
+        //setting headers
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
+        
+        
+        //auth stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                if httpResponse.statusCode == 200 {
+                    print("Friend request denied.")
+                } else {
+                    print("Server returned status code: \(httpResponse.statusCode)")
+                }
+            }
+        }.resume()
     }
     
     var body: some View {
@@ -171,7 +222,10 @@ struct FriendRequestView: View {
                                     .buttonStyle(BorderlessButtonStyle())
                             }
                             Button{
-                                declineRequest() //not working yet
+                                //same as accept, need ot diff receiver id and sender
+                                let user_id = UserDefaults.standard.integer(forKey: "userId")
+
+                                declineRequest(userId: user_id, sender_id: user.user_id)
                             } label: {
                                 Text("Deny")
                                     .foregroundColor(.black)
