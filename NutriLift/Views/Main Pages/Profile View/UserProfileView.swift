@@ -285,7 +285,7 @@ struct UserProfileView: View {
                         }
                         .padding(.top, -12.5)
                     }
-                    else if(isPending){
+                    else if(isPending && !isFriend){
                         Button{
                             //add undo btn
                         } label:{
