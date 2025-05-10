@@ -27,7 +27,7 @@ struct UserProfileView: View {
     @State private var points: Int = 0
     @State private var friendRequest: Bool = false
     @State private var isFriend: Bool = false
-    @State private var isPending: Bool = true
+    @State private var isPending: Bool = false
     
     var caloriesProgress: Double {
         guard caloriesGoal > 0 else { return 0.0 }
