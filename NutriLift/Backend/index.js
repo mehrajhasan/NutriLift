@@ -518,9 +518,9 @@ app.post('/friend-req', authenticateToken, async (req, res) => {
         //alr sets value to default initially from db setup
         //log the friend req
         await db.query(
-                       `INSERT INTO friend_requests (sender_id, receiver_id) VALUES ($1,$2)`,
-                       [sender_id,receiver_id]
-                       );
+                    `INSERT INTO friend_requests (sender_id, receiver_id) VALUES ($1,$2)`,
+                    [sender_id,receiver_id]
+                    );
         
         
         //get the username to log for notification message from sender_id
@@ -534,12 +534,12 @@ app.post('/friend-req', authenticateToken, async (req, res) => {
         const message = `${senderUsername} sent you a friend request.`;
         
         //log the request into notifications table (to display later), message is what will pop up in notif view
-        await db.query(
-                       `INSERT INTO notifications (user_id, message) VALUES ($1,$2)`,
-                       [receiver_id, message]
-                       )
+        // await db.query(
+        //                `INSERT INTO notifications (user_id, message) VALUES ($1,$2)`,
+        //                [receiver_id, message]
+        //                )
         
-        console.log("successfully added notif to user", receiver_id, "notifications");
+        // console.log("successfully added notif to user", receiver_id, "notifications");
         console.log("successfully sent request sent from user", sender_id, "to user", receiver_id);
         res.status(200).json({ message: "Friend request successfully sent" });
     }
@@ -759,7 +759,61 @@ app.get('/:user_id/leaderboard', async (req,res) => {
     //get all from friends and display pfp rank name pts
 })
 
-//
+//returns the added up data for all macros
+//https://www.postgresql.org/docs/7.4/datatype.html for float8 (just turns the string that we get into double so we can send back properly)
+app.get('/macro-daily/:user_id', async (req, res) => {
+    const { user_id } = req.params;
+
+    try{
+        //adds the cal protein carb fat and returns for current day for the user_id
+        const result = await db.query(
+            `SELECT 
+                SUM(calories)::float8 AS calories,
+                SUM(protein)::float8 AS protein,
+                SUM(carbs)::float8 AS carbs,
+                SUM(fats)::float8 AS fats
+            FROM macros
+            WHERE user_id = $1 AND DATE(created_at) = CURRENT_DATE`,
+            [user_id]
+        );
+
+        //send all info to server
+        console.log(result.rows);
+        res.status(200).json(result.rows);
+    }
+    catch(err){
+        console.log("error fetching info for daily macros");
+        res.status(500).json({error: "Server err" });
+    }
+})
+
+//get macro goal for user
+//https://www.postgresql.org/docs/7.4/datatype.html for float8 (just turns the string that we get into double so we can send back properly)
+app.get('/macro-goal/:user_id', async (req,res) => {
+    const { user_id } = req.params;
+
+    try{
+        //using float8 to return it as doubles so its easier to hanlde on client side
+        const result = await db.query(
+            `SELECT
+                protein_goal::float8 AS protein_goal,
+                carbs_goal::float8 AS carbs_goal,
+                fats_goal::float8 AS fats_goal,
+                calories_goal::float8 AS calories_goal
+            FROM macro_goals
+            WHERE user_id = $1`,
+            [user_id]
+        )
+
+        //send all info to server
+        console.log(result.rows);
+        res.status(200).json(result.rows);
+    }
+    catch(err){
+        console.log("error fetching info for macro goals");
+        res.status(500).json({error: "Server err" });
+    }
+})
 
 
 
