@@ -25,10 +25,10 @@ struct DailyMacros: Codable {
 }
 
 struct MacroGoal: Codable {
-    let protein_goal: Double
-    let carbs_goal: Double
-    let fats_goal: Double
-    let calories_goal: Double
+    let protein_goal: Double?
+    let carbs_goal: Double?
+    let fats_goal: Double?
+    let calories_goal: Double?
 }
 
 struct ProfileView: View {
@@ -208,10 +208,18 @@ struct ProfileView: View {
                         let goal = try decoder.decode([MacroGoal].self, from: data)
                         
                         DispatchQueue.main.async{
-                            self.proteinGoal = goal[0].protein_goal
-                            self.carbsGoal = goal[0].carbs_goal
-                            self.fatGoal = goal[0].fats_goal
-                            self.caloriesGoal = goal[0].calories_goal
+                            if let hasGoal = goal.first {
+                                self.proteinGoal = hasGoal.protein_goal ?? 0
+                                self.carbsGoal = hasGoal.carbs_goal ?? 0
+                                self.fatGoal = hasGoal.fats_goal ?? 0
+                                self.caloriesGoal = hasGoal.calories_goal ?? 0
+                            }
+                            else{
+                                self.proteinGoal = 0
+                                self.carbsGoal = 0
+                                self.fatGoal = 0
+                                self.caloriesGoal = 0
+                            }
                         }
                     } catch {
                         print("Failed to decode server response: \(error.localizedDescription)")
