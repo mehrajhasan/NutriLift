@@ -17,12 +17,30 @@ struct UserProfile: Codable {
     let points: Int
 }
 
+struct DailyMacros: Codable {
+    let calories: Double
+    let protein: Double
+    let carbs: Double
+    let fats: Double
+}
+
+struct MacroGoal: Codable {
+    let protein_goal: Double
+    let carbs_goal: Double
+    let fats_goal: Double
+    let calories_goal: Double
+}
+
 struct ProfileView: View {
     @State private var macroProgress: Double = 0.0 // from 0 to 1
-    @State private var caloriesConsumed: Int = 0
-    @State private var caloriesGoal: Int = 0
-    @State private var proteinConsumed: Int = 0
-    @State private var proteinGoal: Int = 0
+    @State private var caloriesConsumed: Double = 0
+    @State private var caloriesGoal: Double = 0
+    @State private var proteinConsumed: Double = 0
+    @State private var proteinGoal: Double = 0
+    @State private var carbsConsumed: Double = 0
+    @State private var carbsGoal: Double = 0
+    @State private var fatConsumed: Double = 0
+    @State private var fatGoal: Double = 0
     
     //from db
     @State private var first_name: String = "John"
@@ -42,6 +60,20 @@ struct ProfileView: View {
     var proteinProgress: Double {
         guard proteinGoal > 0 else { return 0.0 }
         let prog = Double(proteinConsumed) / Double(proteinGoal)
+        return prog.isFinite ? prog : 0.0
+    }
+    
+    //for progress bar
+    var carbProgress: Double {
+        guard carbsGoal > 0 else { return 0.0 }
+        let prog = Double(carbsConsumed) / Double(carbsGoal)
+        return prog.isFinite ? prog : 0.0
+    }
+    
+    //for progress bar
+    var fatProgress: Double {
+        guard fatGoal > 0 else { return 0.0 }
+        let prog = Double(fatConsumed) / Double(fatGoal)
         return prog.isFinite ? prog : 0.0
     }
     
@@ -90,6 +122,107 @@ struct ProfileView: View {
             }
         }.resume()
     }
+    
+    //fetches the added up macros for the day for user
+    func fetchDailyMacros(userId: Int) {
+        guard let url = URL(string: "http://localhost:3000/macro-daily/\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        //setting up get
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        //auth stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            if httpResponse.statusCode == 200 {
+                if let data = data {
+                    do {
+                        let decoder = JSONDecoder()
+                        let macros = try decoder.decode([DailyMacros].self, from: data)
+                        
+                        DispatchQueue.main.async{
+                            self.caloriesConsumed = macros[0].calories
+                            self.proteinConsumed = macros[0].protein
+                            self.carbsConsumed = macros[0].carbs
+                            self.fatConsumed = macros[0].fats
+                        }
+                    } catch {
+                        print("Failed to decode server response: \(error.localizedDescription)")
+                    }
+                }
+            } else {
+                print("Server returned status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
+    }
+    
+    //fetch the macrogoal, no annoying type conversion cus float8
+    func fetchMacroGoal(userId: Int){
+        guard let url = URL(string: "http://localhost:3000/macro-goal/\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        //setting up get
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        //auth stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            if httpResponse.statusCode == 200 {
+                if let data = data {
+                    do {
+                        let decoder = JSONDecoder()
+                        let goal = try decoder.decode([MacroGoal].self, from: data)
+                        
+                        DispatchQueue.main.async{
+                            self.proteinGoal = goal[0].protein_goal
+                            self.carbsGoal = goal[0].carbs_goal
+                            self.fatGoal = goal[0].fats_goal
+                            self.caloriesGoal = goal[0].calories_goal
+                        }
+                    } catch {
+                        print("Failed to decode server response: \(error.localizedDescription)")
+                    }
+                }
+            } else {
+                print("Server returned status code: \(httpResponse.statusCode)")
+            }
+        }.resume()
+    }
+
     
     var body: some View {
         NavigationStack {
@@ -181,25 +314,7 @@ struct ProfileView: View {
                 
                 
                 VStack(alignment: .leading, spacing: 25){
-                    VStack{
-                        HStack{
-                            Text("Macro Progress")
-                            Spacer()
-                            Text("\(Int(macroProgress * 100))%")
-                        }
-                        .foregroundColor(.black)
-                        .bold()
-                        
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12.5)
-                                .fill(Color.white)
-                                .frame(height:30)
-                                .padding(.horizontal, -7.5)
-                            ProgressView(value: macroProgress)
-                        }
-                    }
-                    
-                    
+            
                     VStack{
                         HStack{
                             Text("Calories")
@@ -237,6 +352,42 @@ struct ProfileView: View {
                         }
                     }
                     
+                    VStack{
+                        HStack{
+                            Text("Carbohydrates")
+                            Spacer()
+                            Text("\(Int(carbProgress*100))%")
+                        }
+                        .foregroundColor(.black)
+                        .bold()
+                        
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 12.5)
+                                .fill(Color.white)
+                                .frame(height:30)
+                                .padding(.horizontal, -7.5)
+                            ProgressView(value: carbProgress)
+                        }
+                    }
+                    
+                    VStack{
+                        HStack{
+                            Text("Fats")
+                            Spacer()
+                            Text("\(Int(fatProgress*100))%")
+                        }
+                        .foregroundColor(.black)
+                        .bold()
+                        
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 12.5)
+                                .fill(Color.white)
+                                .frame(height:30)
+                                .padding(.horizontal, -7.5)
+                            ProgressView(value: fatProgress)
+                        }
+                    }
+                    
                     
                     
                 }
@@ -246,12 +397,14 @@ struct ProfileView: View {
                     .fill(Color(red: 0.827, green: 0.827, blue: 0.827))
                 )
                 .padding(.horizontal)
-                .padding(.top, 150)
+                .padding(.top, 250)
             }
             .onAppear {
                 if let userId = UserDefaults.standard.value(forKey: "userId") as? Int {
                     print("Retrieved userID: \(userId)")
                     fetchUserProfile(userId: userId)
+                    fetchDailyMacros(userId: userId)
+                    fetchMacroGoal(userId: userId)
                 }
                 else{
                     print("error fetching userid")
