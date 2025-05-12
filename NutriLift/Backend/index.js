@@ -214,6 +214,16 @@ app.post('/signup', async (req, res) => {
                        'INSERT INTO userprofiles (user_id, profile_pic, points) VALUES ($1, $2, $3)',
                        [userId, null, 0]
                        );
+
+        await db.query(
+            `INSERT INTO notifications (user_id, message, type) VALUES ($1,$2,$3)`,
+            [userId, 'Welcome to NutriLift!', 'system']
+        )
+
+        await db.query(
+            `INSERT INTO notifications (user_id, message, type) VALUES ($1,$2,$3)`,
+            [userId, 'Set your goals in the Macros tab!', 'reminder']
+        )
         
         //ends
         await db.query('COMMIT');
@@ -534,10 +544,10 @@ app.post('/friend-req', authenticateToken, async (req, res) => {
         const message = `${senderUsername} sent you a friend request.`;
         
         //log the request into notifications table (to display later), message is what will pop up in notif view
-        // await db.query(
-        //                `INSERT INTO notifications (user_id, message) VALUES ($1,$2)`,
-        //                [receiver_id, message]
-        //                )
+        await db.query(
+                       `INSERT INTO notifications (user_id, message, type) VALUES ($1,$2,$3)`,
+                       [receiver_id, message, 'social']
+                       )
         
         // console.log("successfully added notif to user", receiver_id, "notifications");
         console.log("successfully sent request sent from user", sender_id, "to user", receiver_id);
@@ -561,12 +571,13 @@ app.get('/:user_id/notifications', authenticateToken, async (req,res) => {
                 notif_id,
                 user_id,
                 message,
-                is_read,
+                type,
                 created_at
             FROM
                 notifications 
             WHERE
                 user_id = $1
+            ORDER BY created_at DESC;
             `,
                                       [user_id]
                                       );
