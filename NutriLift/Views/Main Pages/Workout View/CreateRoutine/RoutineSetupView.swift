@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import Foundation
 
 // screen for setting up a new workout routine
 struct RoutineSetupView: View {
@@ -61,7 +61,9 @@ struct RoutineSetupView: View {
             .padding(.horizontal)
             
             // navigation link to save the routine, only enabled if name and exercises are filled
-            NavigationLink(destination: SaveRoutineView(routineName: routineName, exercises: selectedExercises)) {
+            Button(action: {
+                saveRoutine()
+            }) {
                 Text("Save Routine")
                     .bold()
                     .frame(maxWidth: .infinity)
@@ -80,5 +82,74 @@ struct RoutineSetupView: View {
             ExerciseSelectionView(selectedExercises: $selectedExercises)
         }
     }
+    
+    
+    // saveRoutine() function from old review page
+    
+    @Environment(\.presentationMode) var presentationMode
+    
+    func saveRoutine() {
+        guard let userId = UserDefaults.standard.value(forKey: "userId") as? Int else {
+            print("no user ID found.")
+            return
+        }
+        
+        let routineData: [String: Any] = [
+            "title": routineName,
+            "user_id": userId,
+            "exercises": selectedExercises.map { exercise in
+                return [
+                    "id": exercise.id,
+                    "name": exercise.name,
+                    "sets": exercise.sets.map { set in
+                        return [
+                            "id": set.id,
+                            "weight": set.weight,
+                            "reps": set.reps
+                        ]
+                    }
+                ]
+            }
+        ]
+        
+        guard let url = URL(string: "http://localhost:3000/api/routines") else {
+            print("invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: routineData)
+        } catch {
+            print("error encoding JSON:", error)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("network error:", error)
+                return
+            }
+            
+            guard let data = data else {
+                print("no data received")
+                return
+            }
+            
+            do {
+                let _ = try JSONDecoder().decode(Routine.self, from: data)
+                DispatchQueue.main.async {
+                    print("routine saved successfully")
+                    presentationMode.wrappedValue.dismiss()
+                }
+            } catch {
+                print("decoding error:", error)
+                print("raw response:", String(data: data, encoding: .utf8) ?? "n/a")
+            }
+        }.resume()
+    }
+    
 }
-
