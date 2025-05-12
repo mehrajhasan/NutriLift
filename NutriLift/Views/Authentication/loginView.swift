@@ -7,6 +7,10 @@ struct loginView: View {
     @State private var loginSuccess: Bool = false
     @State private var navigateToHome: Bool = false
     
+    // for signoutvtaskbar login
+    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+
+    
     var onLoginSuccess: () -> Void
     
     func login() {
@@ -55,7 +59,7 @@ struct loginView: View {
                              UserDefaults.standard.set(userId, forKey: "userId")
                          }
                          
-                         self.loginSuccess = true
+                         self.isLoggedIn = true
                          print("Login successful.")
                          self.onLoginSuccess()
                     } else {

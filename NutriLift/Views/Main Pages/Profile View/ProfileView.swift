@@ -49,6 +49,9 @@ struct ProfileView: View {
     @State private var last_name: String = "Doe"
     @State private var points: Int = 0
     
+    // for signout funct
+    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = true
+
     
     //need to make dynamic
     //for progress bar
@@ -235,7 +238,7 @@ struct ProfileView: View {
     
     func signOut(){
         UserDefaults.standard.removeObject(forKey: "userId")
-        isLoggedOut = true
+        isLoggedIn = false
     }
 
     
