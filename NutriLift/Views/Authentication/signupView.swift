@@ -9,17 +9,20 @@ struct SignupTextField: View {
     var body: some View {
         TextField(placeholder, text: $text, prompt: Text(placeholder).foregroundColor(.gray))
             .padding()
-            .background(Color.black)
+            .background(Color(hue: 0.0, saturation: 0.0, brightness: 0.1686))
             .foregroundColor(.white)
             .cornerRadius(25)
             .overlay(
                 RoundedRectangle(cornerRadius: 25)
+                
                     .stroke(isError ? Color.red : Color(hue: 0.0, saturation: 0.0, brightness: 0.1686), lineWidth: 2)
+                    
             )
             .frame(height: 50)
             .padding(.horizontal, 5)
             .onChange(of: text) { _ in
                 onCommit?()
+                
             }
     }
 }
