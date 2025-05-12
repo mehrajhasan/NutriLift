@@ -41,6 +41,8 @@ struct ProfileView: View {
     @State private var carbsGoal: Double = 0
     @State private var fatConsumed: Double = 0
     @State private var fatGoal: Double = 0
+    @State private var showLogoutConfirmation: Bool = false
+    @State private var isLoggedOut = false
     
     //from db
     @State private var first_name: String = "John"
@@ -230,6 +232,11 @@ struct ProfileView: View {
             }
         }.resume()
     }
+    
+    func signOut(){
+        UserDefaults.standard.removeObject(forKey: "userId")
+        isLoggedOut = true
+    }
 
     
     var body: some View {
@@ -250,15 +257,37 @@ struct ProfileView: View {
                     Text("Profile")
                         .font(.title)
                         .bold()
+                        .padding(.trailing, -30)
                     
                     Spacer()
-                    
-                    NavigationLink(destination: UserSearch()) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.title2)
-                            .foregroundColor(.black)
+                    HStack{
+                        Button(action: {
+                            showLogoutConfirmation = true
+                        }) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .foregroundColor(.red)
+                                .font(.title2)
+                        }
+                        .alert("Sign out?", isPresented: $showLogoutConfirmation) {
+                            Button("Log out", role: .destructive) {
+                                signOut()
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        }
+                        
+                        NavigationLink(destination: UserSearch()) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title2)
+                                .foregroundColor(.black)
+                        }
                     }
+                    .navigationDestination(isPresented: $isLoggedOut) {
+                            loginView(onLoginSuccess: {})
+                                .navigationBarBackButtonHidden(true)
+                        }
                     
+
+                
                 }
                 .padding(.horizontal)
                 .padding(.top,-375)
