@@ -14,7 +14,7 @@ struct MacrosView: View {
             return meal.created_at.starts(with: selectedDateString)
         }
     }
-
+    
     var body: some View {
         NavigationView {  // Wrap everything in NavigationView
             VStack {
@@ -25,11 +25,6 @@ struct MacrosView: View {
                         .font(.largeTitle)
                         .bold()
                     Spacer()
-                    Button(action: { /* Open menu */ }) {
-                        Image(systemName: "line.horizontal.3")
-                            .foregroundColor(.black)
-                            .font(.title)
-                    }
                 }
                 .padding()
                 
@@ -45,38 +40,40 @@ struct MacrosView: View {
                 .padding(.horizontal)
                 
                 // Date Navigation
-                // Date Navigation with optional calendar picker
-                VStack {
-                    HStack {
-                        Button(action: {
-                            selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate //toggle backwards date
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.black)
-                        }
-
-                        Text(dateFormatter.string(from: selectedDate))
-                            .font(.headline)
-                            .padding(.horizontal)
-
-                        Button(action: {
-                            selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate //toggle forward date
-                        }) {
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.black)
-                        }
+                // Date Navigation with optional calendar picker. This was modified so that the two dates shown before are now combined into one
+                HStack(spacing: 20) {   //combined
+                    Button(action: {
+                        selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+                    }) {
+                        Image(systemName: "chevron.left")   //for left toggle
+                            .font(.title2)
+                            .padding(8)
+                            .background(Color(.systemGray5))
+                            .clipShape(Circle())
                     }
-                    .padding(.bottom, 4)
-
-                    // DatePicker
-                    DatePicker("",  //allow user to choose which date to go to
-                               selection: $selectedDate,
-                               displayedComponents: [.date])
-                        .datePickerStyle(.compact)
-                        .labelsHidden()
-                        .padding(.horizontal)
+                    
+                    DatePicker(
+                        "",
+                        selection: $selectedDate,
+                        displayedComponents: [.date]
+                    )
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                    
+                    Button(action: {
+                        selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+                    }) {
+                        Image(systemName: "chevron.right")  //for right toggle
+                            .font(.title2)
+                            .padding(8)
+                            .background(Color(.systemGray5))
+                            .clipShape(Circle())
+                    }
                 }
                 .padding()
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(radius: 2)
                 
                 //View/Change Macro Goals buttion
                 NavigationLink(destination: SetMacroGoalsView()) {
@@ -96,22 +93,22 @@ struct MacrosView: View {
                 //COMMENTING THIS PART OUT BECAUSE CODE NEEDS TO BE BROKEN UP INTO SMALLER PARTS. PRIOR ERROR:
                 //"The compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
                 /*:
-                // Scrollable Meal Sections
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        ForEach(["Breakfast", "Lunch", "Dinner"], id: \.self) { type in
-                            MealSectionView(
-                                mealType: type,
-                                meals: mealsForSelectedDate.filter { $0.meal_type == type },
-                                selectedDate: selectedDate,
-                                deleteButton: deleteMeal
-                            )
-                        }
-                    }
-                    .padding()
-                }
-                */
-
+                 // Scrollable Meal Sections
+                 ScrollView {
+                 VStack(alignment: .leading, spacing: 20) {
+                 ForEach(["Breakfast", "Lunch", "Dinner"], id: \.self) { type in
+                 MealSectionView(
+                 mealType: type,
+                 meals: mealsForSelectedDate.filter { $0.meal_type == type },
+                 selectedDate: selectedDate,
+                 deleteButton: deleteMeal
+                 )
+                 }
+                 }
+                 .padding()
+                 }
+                 */
+                
                 Spacer()
             }
             .onAppear {
@@ -134,7 +131,7 @@ struct MacrosView: View {
             }
         }
     }
-
+    
     var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateFormat = "MM-dd-yyyy"
@@ -143,7 +140,7 @@ struct MacrosView: View {
     
     func fetchMeals() {
         guard let url = URL(string: "http://localhost:3000/api/macros/\(userID)") else { return }
-
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {
                 do {
@@ -185,30 +182,35 @@ struct MealSectionView: View {
     var meals: [LoggedMeal]
     var selectedDate: Date
     var deleteButton: (LoggedMeal) -> Void //will allow deleteMeal function to be passed in.
+    @State private var showDeleteAlert = false
+    @State private var mealToDelete: LoggedMeal?
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(mealType)
                 .font(.title2)
                 .bold()
                 .foregroundColor(.black)
-
+            
             if meals.isEmpty {
                 Text("No meals added yet")
                     .foregroundColor(.gray)
                     .italic()
+                    .frame(minHeight: 60)
             } else {
                 ForEach(meals) { meal in
                     HStack{
                         VStack(alignment: .leading, spacing: 4) {
                             Text(meal.food_name)
                                 .font(.headline)
-                            Text("\(meal.calories) cal - \(meal.protein)g protein - \(meal.carbs)g carbs - \(meal.fats)g fat")
+                            Text("\(meal.calories) cal - \(formatMacro(meal.protein))g protein - \(formatMacro(meal.carbs))g carbs - \(formatMacro(meal.fats))g fat")
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                         }
                         Spacer()
                         Button(action: {
-                            deleteButton(meal)
+                            mealToDelete = meal
+                            showDeleteAlert = true
+                            //deleteButton(meal)
                         }) {
                             Image(systemName: "trash")
                                 .foregroundStyle(.red)
@@ -217,9 +219,16 @@ struct MealSectionView: View {
                     .padding(6)
                     .background(Color.white)
                     .cornerRadius(8)
+                    .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    .alert("Are You Sure You Want To Delete This Meal?", isPresented: $showDeleteAlert, presenting: mealToDelete) { meal in
+                        Button("Yes", role: .destructive) {
+                            deleteButton(meal)
+                        }
+                        Button("No", role: .cancel) { }
+                    }
                 }
             }
-
+            
             // NavigationLink to AddMealView
             NavigationLink(destination: AddMealView(mealType: mealType, selectedDate: selectedDate)) {
                 Text("Add Meal")
@@ -247,7 +256,15 @@ struct LoggedMeal: Identifiable, Decodable {
     let fats: Double
     let created_at: String
     let meal_type: String?
+    
+}
 
+func formatMacro(_ value: Double) -> String {
+    if value.truncatingRemainder(dividingBy: 1) == 0 {
+        return String(format: "%.0f", value) // no decimals if it's whole
+    } else {
+        return String(format: "%.1f", value) // show only one decimal place if needed
+    }
 }
 
 #Preview {
