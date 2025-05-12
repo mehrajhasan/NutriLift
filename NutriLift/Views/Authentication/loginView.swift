@@ -46,8 +46,15 @@ struct loginView: View {
             }
 
             if let data = data {
-                let rawResponse = String(data: data, encoding: .utf8) ?? "No response"
+                var rawResponse = String(data: data, encoding: .utf8) ?? "No response"
                 print(" Raw Server Response:", rawResponse) // Log the response before decoding
+                
+                if(rawResponse == "{\"error\":\"Incorrect password\"}"){
+                    rawResponse = "Incorrect password"
+                }
+                else if(rawResponse == "{\"error\":\"User not found\"}"){
+                    rawResponse = "User not found"
+                }
 
                 do {
                      let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
@@ -63,7 +70,7 @@ struct loginView: View {
                          print("Login successful.")
                          self.onLoginSuccess()
                     } else {
-                        print("No user ID found in API response.")
+                        self.message = rawResponse
                     }
                 } catch {
                     print("Error decoding login response:", error)
@@ -160,8 +167,15 @@ struct loginView: View {
                     .foregroundColor(Color(hue: 0.6667, saturation: 1.0, brightness: 1.0))
                     
                 }
+                
                 VStack{
                     Spacer()
+                    if(!message.isEmpty){
+                        Text(message)
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 50)
+                    }
                     Button(action: {
                         login()
                         //check user in database
