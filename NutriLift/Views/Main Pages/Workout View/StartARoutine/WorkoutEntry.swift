@@ -40,117 +40,116 @@ struct LiveExerciseCardView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    showingDeleteOptions = true
-                }) {
+                Menu {
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Label("Delete Exercise", systemImage: "trash")
+                    }
+                } label: {
                     Image(systemName: "ellipsis")
                         .foregroundColor(.gray)
                         .padding(.trailing, 4)
                 }
-                .confirmationDialog("Options", isPresented: $showingDeleteOptions, titleVisibility: .visible) {
-                    Button("Delete Exercise", role: .destructive) {
-                        onDelete()
-                    }
-                }
-            }
-            .padding(.horizontal, 8)
-            // column headers for set info
-            HStack(spacing: 10) {
-                Text("Set")
-                    .frame(width: 30, alignment: .center)
-                    .padding(.leading, 10)
-                
-                Text("Previous")
-                    .frame(width: 100, alignment: .center)
-                
-                Text("lbs")
-                    .frame(width: 80, alignment: .center)
-                
-                Text("Reps")
-                    .frame(width: 50, alignment: .center)
-                
-                Image(systemName: "checkmark")
-                    .frame(width: 30, alignment: .center)
-                    .padding(.leading, 8)
-                    .padding(.trailing, 5)
-            }
-            .font(.caption)
-            .foregroundColor(.gray)
-            .padding(.horizontal, 8)
-            
-            List {
-                ForEach(Array($exercise.sets.enumerated()), id: \.element.id) { index, $set in
-                    HStack(spacing: 4) {
-                        Text("\(index + 1)")
-                            .frame(width: 30)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(4)
-                            .padding(.trailing, 10)
-                        //Text("\(set.weight) lb × \(set.reps)")
-                        TextField("Coming Soon", text: .constant(""))
-                            .frame(width: 100)
-                            .foregroundColor(.gray.opacity(0.6))
-                        
-                        TextField("lbs", text: $set.weight)
-                            .frame(width: 50)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.leading, 25)
-                        
-                        TextField("reps", text: $set.reps)
-                            .frame(width: 40)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.leading, 20)
-                        
-                        
-                        
-                        Button(action: {
-                            set.isCompleted.toggle()
-                        }) {
-                            Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(set.isCompleted ? .green : .gray)
-                            
-                        }
-                        .frame(width: 20)
-                        .padding(.leading, 25)
-                    }
-                    .padding(.vertical, 6)
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            deleteSet(at: index)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-                }
-            }
-            .listStyle(PlainListStyle())
-            .listRowInsets(EdgeInsets())
-            .frame(height: CGFloat(exercise.sets.count) * 55)
-            
-            // button to add a new set to the exercise
-            Button(action: {
-                exercise.sets.append(LiveSetEntry(id: UUID().uuidString, weight: "", reps: "", isCompleted: false))
-            }) {
-                Text("+ Add Set")
-                    .font(.caption)
-                    .frame(maxWidth: .infinity)
-                    .padding(10)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal, 8)
-            .padding(.top, 6)
         }
+        .padding(.horizontal, 8)
+        // column headers for set info
+        HStack(spacing: 10) {
+            Text("Set")
+                .frame(width: 30, alignment: .center)
+                .padding(.leading, 10)
+            
+            Text("Previous")
+                .frame(width: 100, alignment: .center)
+            
+            Text("lbs")
+                .frame(width: 80, alignment: .center)
+            
+            Text("Reps")
+                .frame(width: 50, alignment: .center)
+            
+            Image(systemName: "checkmark")
+                .frame(width: 30, alignment: .center)
+                .padding(.leading, 8)
+                .padding(.trailing, 5)
+        }
+        .font(.caption)
+        .foregroundColor(.gray)
+        .padding(.horizontal, 8)
+        
+        List {
+            ForEach(Array($exercise.sets.enumerated()), id: \.element.id) { index, $set in
+                HStack(spacing: 4) {
+                    Text("\(index + 1)")
+                        .frame(width: 30)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(4)
+                        .padding(.trailing, 10)
+                    //Text("\(set.weight) lb × \(set.reps)")
+                    TextField("Coming Soon", text: .constant(""))
+                        .frame(width: 100)
+                        .foregroundColor(.gray.opacity(0.6))
+                    
+                    TextField("lbs", text: $set.weight)
+                        .frame(width: 50)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.leading, 25)
+                    
+                    TextField("reps", text: $set.reps)
+                        .frame(width: 40)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.leading, 20)
+                    
+                    
+                    
+                    Button(action: {
+                        set.isCompleted.toggle()
+                    }) {
+                        Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(set.isCompleted ? .green : .gray)
+                        
+                    }
+                    .frame(width: 20)
+                    .padding(.leading, 25)
+                }
+                .padding(.vertical, 6)
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        deleteSet(at: index)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            }
+        }
+        .listStyle(PlainListStyle())
+        .listRowInsets(EdgeInsets())
+        .frame(height: CGFloat(exercise.sets.count) * 55)
+        
+        // button to add a new set to the exercise
+        Button(action: {
+            exercise.sets.append(LiveSetEntry(id: UUID().uuidString, weight: "", reps: "", isCompleted: false))
+        }) {
+            Text("+ Add Set")
+                .font(.caption)
+                .frame(maxWidth: .infinity)
+                .padding(10)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
+        }
+        .padding(.horizontal, 8)
+        .padding(.top, 6)
+    }
         .padding(10)
         .background(Color.white)
         .cornerRadius(20)
         .shadow(color: .gray.opacity(0.15), radius: 8, x: 0, y: 2)
         .padding(.horizontal, 10)
-    }
-    // removes a set from the list
-    private func deleteSet(at index: Int) {
-        exercise.sets.remove(at: index)
-    }
+}
+// removes a set from the list
+private func deleteSet(at index: Int) {
+    exercise.sets.remove(at: index)
+}
 }
 
 #Preview {

@@ -14,6 +14,11 @@ struct WorkoutSessionView: View {
     @State private var elapsedTime: TimeInterval = 0
     @State private var startTime: Date? = nil
     
+    //Add exercise logic
+    @State private var ShowExerciseSearch = false
+    @State private var TempExerciseEntries: [ExerciseEntry] = []
+    
+    
     
     let routine: Routine
     @State private var exercises: [LiveWorkoutEntry]
@@ -43,17 +48,19 @@ struct WorkoutSessionView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 8) {
-                
+                Spacer(minLength: 20)// pushes everything down
                 // Title and Timer
                 VStack(spacing: 4) {
                     Text(routine.title)
                         .font(.largeTitle.bold())
-                        .padding(.top)
+                        .padding(.top,50)
+                        
                     
                     Text(formatElapsedTime())
                         .font(.headline)
                         .foregroundColor(.gray)
                 }
+                
                 ScrollView {
                     VStack(spacing: 16) {
                         ForEach($exercises) { $exercise in
@@ -76,10 +83,54 @@ struct WorkoutSessionView: View {
                         .padding(.top, 20)
                     }
                 }
+                
+                NavigationLink(destination: ExerciseSelectionView(selectedExercises: $TempExerciseEntries)
+                    .onDisappear {
+                        let newLiveEntries = TempExerciseEntries.map { entry in
+                            LiveWorkoutEntry(
+                                id: entry.id,
+                                name: entry.name,
+                                sets: entry.sets.map { set in
+                                    LiveSetEntry(
+                                        id: set.id,
+                                        weight: set.weight,
+                                        reps: set.reps,
+                                        isCompleted: false
+                                    )
+                                }
+                            )
+                        }
+                        for newExercise in newLiveEntries {
+                            if !exercises.contains(where: { $0.name == newExercise.name }) {
+                                exercises.append(newExercise)
+                            }
+                        }
+                    },
+                               isActive: $ShowExerciseSearch
+                ) {
+                    EmptyView()
+                }
+                
             }
             
             
             .toolbar {
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        ShowExerciseSearch = true
+                        TempExerciseEntries = []
+                    }) {
+                        Text("Add")
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                            .padding(.top, 50)
+                            .padding(.bottom, 50)
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         addpoints(userId: routine.user_id)
@@ -92,6 +143,7 @@ struct WorkoutSessionView: View {
                             .background(Color.green)
                             .cornerRadius(10)
                             .padding(.top, 50)
+                            .padding(.bottom, 50)
                     }
                 }
             }
@@ -104,7 +156,6 @@ struct WorkoutSessionView: View {
             
             
         }
-        
         
     }
     

@@ -86,7 +86,7 @@ struct ExerciseSelectionView: View {
         }
     }
     
-
+    
     // pulls exercise data from the backend
     func fetchExercises() {
         guard let url = URL(string: "http://localhost:3000/api/exercises") else { return }
@@ -100,4 +100,8 @@ struct ExerciseSelectionView: View {
             }
         }.resume()
     }
+    
+    
+    
+    
 }

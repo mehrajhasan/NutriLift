@@ -11,7 +11,7 @@ struct Notification: Codable {
     let notif_id: Int
     let user_id: Int
     let message: String
-    let is_read: Bool
+    let type: String
     let created_at: String
 }
 struct NotificationView: View {
@@ -112,8 +112,26 @@ struct NotificationView: View {
                 //normal notifs from us (not friend requests)
                 ForEach(notifications, id: \.notif_id){ notification in
                     HStack{
-                        Text(notification.message)
-                            .font(.body)
+                        if(notification.type == "social"){
+                            Image(systemName: "person.2")
+                                .foregroundColor(.blue)
+                                .font(.system(size: 24))
+                        }
+                        else if(notification.type == "reminder"){
+                            Image(systemName: "alarm")
+                                .foregroundColor(.red)
+                                .font(.system(size: 24))
+                        }
+                        else if(notification.type == "system"){
+                            Image(systemName: "bolt.shield")
+                                .foregroundColor(.purple)
+                                .font(.system(size: 24))
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4){
+                            Text(notification.message)
+                                .font(.body)
+                        }
                         Spacer()
                         
                         Text("1hr ago")

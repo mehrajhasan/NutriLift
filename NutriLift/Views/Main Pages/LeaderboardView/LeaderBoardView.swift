@@ -81,18 +81,34 @@ struct LeaderBoardView: View {
         
         return 0
     }
+        
+    //ranking for logged in user
+    func rankColor(rank: Int) -> Color {
+        if(rank == 1){
+            return Color(red: 0.9686, green: 0.7765, blue: 0.2902)
+        }
+        else if(rank == 2){
+            return Color(red: 0.8502, green: 0.8502, blue: 0.8502)
+        }
+        else if(rank == 3){
+            return Color(red: 0.851, green: 0.627, blue: 0.4)
+        }
+        else{
+            return Color(red: 0.4, green: 0.698, blue: 0.941)
+        }
+    }
 
     var body: some View {
         NavigationStack{
             ScrollView{
                 //put your own card on top of leaderboard so yk where u stand
                 if let userId = UserDefaults.standard.value(forKey: "userId") as? Int, let user = friendsData.first(where: { $0.user_id == userId}) {
+                    let yourRank = calcuateRank(userId: userId, from: friendsData)
                     VStack(alignment: .leading){
                         Text("Your rank")
                             .font(.subheadline)
                             .foregroundColor(Color.white)
                             .bold()
-                        let yourRank = calcuateRank(userId: userId, from: friendsData)
                         HStack(){
                             Text("\(yourRank)")
                                 .frame(width: 30)
@@ -119,7 +135,7 @@ struct LeaderBoardView: View {
                         }
                     }
                     .padding()
-                    .background(Color(red: 0.4, green: 0.698, blue: 0.941))
+                    .background(rankColor(rank: yourRank))
                     .cornerRadius(15)
                     .foregroundColor(.white)
                     .padding(.horizontal,5)
@@ -134,7 +150,7 @@ struct LeaderBoardView: View {
                     ForEach(filteredData.indices, id: \.self){ index in
                         let user = filteredData[index]
                         
-                        let userRank = index + 2
+                        let userRank = calcuateRank(userId: user.user_id, from: friendsData)
                         HStack(){
                             Text("\(userRank)")
                                 .frame(width: 30)
@@ -162,9 +178,9 @@ struct LeaderBoardView: View {
                         .padding()
                         //make sure the ranks have diff colors gold silv bronze
                         .background(
-                            index == 0 ? Color(red: 0.9686, green: 0.7765, blue: 0.2902) :
-                            index == 1 ? Color(red: 0.8502, green: 0.8502, blue: 0.8502) :
-                            index == 2 ? Color(red: 0.851, green: 0.627, blue: 0.4) :
+                            userRank == 1 ? Color(red: 0.9686, green: 0.7765, blue: 0.2902) :
+                            userRank == 2 ? Color(red: 0.8502, green: 0.8502, blue: 0.8502) :
+                            userRank == 3 ? Color(red: 0.851, green: 0.627, blue: 0.4) :
                                 Color.white.opacity(0.75)
                         )
                         .cornerRadius(15)
