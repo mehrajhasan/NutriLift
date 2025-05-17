@@ -826,6 +826,28 @@ app.get('/macro-goal/:user_id', async (req,res) => {
     }
 })
 
+//unfollowing a friend
+app.post('/unfollow', authenticateToken, async (req, res) => {
+    const { user_id, target_id } = req.body;
+    console.log("attempting to unfollow a friend")
+    try{
+        //delete the friendship from the friendship table
+        await db.query(
+            `DELETE FROM friendships 
+            WHERE (user_id1 = $1 AND user_id2 = $2)
+            OR (user_id1 = $2 AND user_id2 = $1)`,
+            [user_id,target_id]
+        );
+        
+        console.log("User", user_id, "unfollowed ", target_id, " successfully");
+        res.status(200).json({message: "successfully unfollowed"});
+    }
+    catch(err){
+        console.log("error unfollowing a friend");
+        res.status(500).json({ error: "Server error" });
+    }
+})
+
 
 
 
