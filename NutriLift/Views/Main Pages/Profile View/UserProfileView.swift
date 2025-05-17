@@ -33,6 +33,9 @@ struct UserProfileView: View {
     @State private var isFriend: Bool = false
     @State private var isPending: Bool = false
     
+    @State private var showUnfollowAlert = false
+
+    
     var caloriesProgress: Double {
         guard caloriesGoal > 0 else { return 0.0 }
         let prog = Double(caloriesConsumed) / Double(caloriesGoal)
@@ -225,6 +228,64 @@ struct UserProfileView: View {
         
     }
     
+    //unfollow func
+    func unfollow(){
+        guard let url = URL(string: "http://localhost:3000/unfollow") else {
+            print("Invalid URL")
+            return
+        }
+        
+        //get logged in user id from UserDefaults
+        let sender_id = UserDefaults.standard.integer(forKey: "userId")
+        
+        //need to send body since post request
+        //just holds the logged in user id and id of the person ur sending friend req to
+        let body = [
+            "user_id": sender_id,
+            "target_id": user.user_id
+        ]
+        
+        //decode, if we dont server gets undefined
+        let bodyData = try? JSONSerialization.data(
+            withJSONObject: body,
+            options: []
+        )
+        
+        //set headers n stuff
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
+        
+        //auth stuff
+        if let token = UserDefaults.standard.string(forKey: "userToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            
+            if let error = error {
+                print("Failed to connect to the server: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid server response")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                if httpResponse.statusCode == 200 {
+                    print("Successfully unfollowed.")
+                    showUnfollowAlert = true;
+                } else {
+                    print("Server returned status code: \(httpResponse.statusCode)")
+                }
+            }
+                
+        }.resume()
+    }
+    
     //fetches the added up macros for the day for user
     func fetchDailyMacros(userId: Int) {
         guard let url = URL(string: "http://localhost:3000/macro-daily/\(userId)") else {
@@ -382,6 +443,7 @@ struct UserProfileView: View {
                 
                             //need to add unfollow functionality as well
                             Button{
+                                unfollow()
                             } label:{
                                 Image(systemName: "person.fill.checkmark")
                             }
@@ -547,6 +609,11 @@ struct UserProfileView: View {
                 else{
                     print("error fetching userid")
                 }
+            }
+            .alert("Unfollowed", isPresented: $showUnfollowAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("You have unfollowed \(user.first_name).")
             }
         }
     }
