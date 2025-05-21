@@ -495,14 +495,14 @@ struct UserProfileView: View {
                     //make dynamic for level and leaderboard score
                     HStack{
                         Text("0")
-                        Image(systemName: "star.circle.fill")
+                        Image(systemName: "trophy.circle.fill")
                             .font(.system(size: 15))
                             .foregroundColor(.black)
                         
                         
                         //need to make dynamic for up down
                         Text("\(user.points)")
-                        Image(systemName: "arrow.up.circle.fill")
+                        Image(systemName: "star.circle.fill")
                             .font(.system(size: 17))
                             .foregroundColor(.green)
                     }

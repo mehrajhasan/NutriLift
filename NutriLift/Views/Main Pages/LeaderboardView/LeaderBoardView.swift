@@ -130,7 +130,7 @@ struct LeaderBoardView: View {
                             Text("\(user.points)")
                                 .padding(.leading)
                             
-                            Image(systemName:"arrow.up.right.circle")
+                            Image(systemName:"star.circle.fill")
                                 .padding(.trailing)
                         }
                     }
@@ -172,7 +172,7 @@ struct LeaderBoardView: View {
                             Text("\(user.points)")
                                 .padding(.leading)
                             
-                            Image(systemName:"arrow.up.right.circle")
+                            Image(systemName:"star.circle.fill")
                                 .padding(.trailing)
                         }
                         .padding()
